@@ -3,6 +3,7 @@ package ru.hunkel.mgrouptracker.database.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "gps_point",
@@ -11,6 +12,8 @@ import androidx.room.ForeignKey
     ]
 )
 data class GPSPoint(
+    @PrimaryKey
+    var id: Long,
 
     @ColumnInfo(name = "event_id")
     var eventId: Long,

@@ -3,6 +3,7 @@ package ru.hunkel.mgrouptracker.database.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "punches",
@@ -11,13 +12,16 @@ import androidx.room.ForeignKey
     ]
 )
 
-class Punches {
+data class Punches (
+
+    @PrimaryKey
+    var id: Long,
 
     @ColumnInfo(name = "event_id")
-    var eventId: Long = 0L
+    var eventId: Long,
 
-    var time: Long = 0L
+    var time: Long,
 
     @ColumnInfo(name = "control_point")
     var controlPoint: Int = 0
-}
+)
