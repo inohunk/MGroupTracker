@@ -1,7 +1,8 @@
-package ru.hunkel.mgrouptracker
+package ru.hunkel.mgrouptracker.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import ru.hunkel.mgrouptracker.R
 
 class MainActivity : AppCompatActivity() {
 
