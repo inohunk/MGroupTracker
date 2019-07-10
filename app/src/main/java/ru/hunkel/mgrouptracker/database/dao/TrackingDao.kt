@@ -2,8 +2,8 @@ package ru.hunkel.mgrouptracker.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import ru.hunkel.mgrouptracker.database.entities.Punches
+import androidx.room.Query
+import ru.hunkel.mgrouptracker.database.entities.Event
 
 /**
  * Interface for communicate with database
@@ -11,7 +11,9 @@ import ru.hunkel.mgrouptracker.database.entities.Punches
 @Dao
 interface TrackingDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertPunch(punch: Punches)
+    @Insert
+    fun addEvent(event: Event)
 
+    @Query("SELECT * FROM events WHERE id = :id")
+    fun getEventById(id: Int): Event
 }

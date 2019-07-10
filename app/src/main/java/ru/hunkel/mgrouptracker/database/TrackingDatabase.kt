@@ -28,6 +28,10 @@ abstract class TrackingDatabase : RoomDatabase() {
                         TrackingDatabase::class.java,
                         "tracking-database"
                     )
+                        //TODO used only for primary testing. In future rewrite all database queries with coroutines
+                        .fallbackToDestructiveMigration()
+                        .allowMainThreadQueries()
+                        //
                         .build()
                 }
             }

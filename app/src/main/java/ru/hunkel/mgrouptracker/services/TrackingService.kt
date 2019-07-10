@@ -6,7 +6,7 @@ import android.os.IBinder
 import ru.hunkel.mgrouptracker.ITrackingService
 
 class TrackingService : Service() {
-    inner class TrackingServiceImpl : ITrackingService.Stub(){
+    inner class TrackingServiceImpl : ITrackingService.Stub() {
         override fun startBeacon() {
 //            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
@@ -19,6 +19,7 @@ class TrackingService : Service() {
 //            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
+
     override fun onBind(intent: Intent): IBinder {
         return TrackingServiceImpl()
     }
