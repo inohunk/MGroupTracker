@@ -7,9 +7,9 @@ import androidx.room.PrimaryKey
 data class Event(
 
     @PrimaryKey(autoGenerate = true)
-    var id: Int,
+    var id: Int = 0,
 
-    var startTime: Long,
+    var startTime: Long = 0L,
 
-    var endTime: Long
+    var endTime: Long = 0L
 )

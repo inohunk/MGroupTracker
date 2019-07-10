@@ -12,15 +12,15 @@ import androidx.room.PrimaryKey
     ]
 )
 
-data class Punches (
+data class Punches(
 
-    @PrimaryKey
-    var id: Long,
+    @PrimaryKey(autoGenerate = true)
+    var id: Int,
 
     @ColumnInfo(name = "event_id")
-    var eventId: Long,
+    var eventId: Long = 0L,
 
-    var time: Long,
+    var time: Long = 0L,
 
     @ColumnInfo(name = "control_point")
     var controlPoint: Int = 0
