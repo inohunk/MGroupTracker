@@ -4,7 +4,7 @@ package ru.hunkel.mgrouptracker;
 // Declare any non-default types here with import statements
 
 interface ITrackingService {
-    void startBeacon();
+    void startEvent();
     void punch();
-    void stopBeacon();
+    void stopEvent();
 }
