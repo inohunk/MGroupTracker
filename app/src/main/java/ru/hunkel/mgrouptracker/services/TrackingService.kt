@@ -18,7 +18,7 @@ class TrackingService : Service() {
     */
     inner class TrackingServiceImpl : ITrackingService.Stub() {
         override fun startEvent() {
-
+            mDatabaseManager.actionStartEvent()
         }
 
         override fun punch() {
@@ -26,7 +26,7 @@ class TrackingService : Service() {
         }
 
         override fun stopEvent() {
-//            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            mDatabaseManager.actionStopEvent()
         }
     }
 

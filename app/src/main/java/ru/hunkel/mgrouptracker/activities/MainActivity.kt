@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.services.TrackingService
@@ -34,6 +35,14 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent =
             Intent(this,TrackingService::class.java)
         bindService(serviceIntent,mTrackingServiceConnection, Context.BIND_AUTO_CREATE)
+
+        start_button.setOnClickListener {
+            mTrackingService!!.startEvent()
+        }
+
+        stop_button.setOnClickListener {
+            mTrackingService!!.stopEvent()
+        }
 
     }
 
