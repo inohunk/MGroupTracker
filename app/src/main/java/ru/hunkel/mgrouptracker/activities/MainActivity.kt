@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
     */
     var mTrackingService: ITrackingService? = null
 
-    val mTrackingServiceConnection = object : ServiceConnection {
+    private val mTrackingServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
 
         }
@@ -32,18 +32,38 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        start_event_button.setOnClickListener {
+            startServiceOnClick()
+        }
+
+        stop_event_button.setOnClickListener {
+            stopServiceOnClick()
+        }
+        updateUIWithCurrentState(false)
+    }
+
+    private fun startServiceOnClick() {
+
         val serviceIntent =
-            Intent(this,TrackingService::class.java)
-        bindService(serviceIntent,mTrackingServiceConnection, Context.BIND_AUTO_CREATE)
+            Intent(this, TrackingService::class.java)
+        startService(serviceIntent)
+        bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_AUTO_CREATE)
 
-        start_button.setOnClickListener {
-            mTrackingService!!.startEvent()
-        }
+        updateUIWithCurrentState(true)
+    }
 
-        stop_button.setOnClickListener {
-            mTrackingService!!.stopEvent()
-        }
+    private fun stopServiceOnClick() {
 
+        unbindService(mTrackingServiceConnection)
+        stopService(Intent(this, TrackingService::class.java))
+
+        updateUIWithCurrentState(false)
+    }
+
+    private fun updateUIWithCurrentState(state: Boolean) {
+        start_event_button.isEnabled = !state
+        stop_event_button.isEnabled = state
     }
 
     override fun onDestroy() {
