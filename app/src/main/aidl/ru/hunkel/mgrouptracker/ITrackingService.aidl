@@ -7,4 +7,5 @@ interface ITrackingService {
     void startEvent();
     void punch();
     void stopEvent();
+    int getState();
 }

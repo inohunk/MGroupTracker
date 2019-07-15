@@ -1,6 +1,9 @@
 package ru.hunkel.mgrouptracker.services
 
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -13,6 +16,8 @@ import org.altbeacon.beacon.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
+import ru.hunkel.mgrouptracker.utils.STATE_OFF
+import ru.hunkel.mgrouptracker.utils.STATE_ON
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.floor
@@ -37,6 +42,7 @@ class TrackingService : Service(), BeaconConsumer {
     private var mCnt = 0
     private val mPunches = LinkedList<Int>()
 
+    private var mTrackingState = STATE_OFF
 
     /*
         VARIABLES
@@ -59,6 +65,10 @@ class TrackingService : Service(), BeaconConsumer {
         override fun stopEvent() {
             mDatabaseManager.actionStopEvent()
             stopOnClick()
+        }
+
+        override fun getState(): Int {
+            return this@TrackingService.mTrackingState
         }
     }
 
@@ -160,7 +170,7 @@ class TrackingService : Service(), BeaconConsumer {
         try {
             mBeaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, null, null))
         } catch (e: RemoteException) {
-            Log.e(TAG,e.message)
+            Log.e(TAG, e.message)
         }
 
     }
@@ -171,6 +181,7 @@ class TrackingService : Service(), BeaconConsumer {
         mCnt = 0
         mPunches.clear()
         mBeaconManager.bind(this)
+        mTrackingState = STATE_ON
 
         updateWakeLock()
     }
@@ -178,6 +189,8 @@ class TrackingService : Service(), BeaconConsumer {
     fun stopOnClick() {
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
+
+        mTrackingState = STATE_OFF
 
         updateWakeLock()
 
