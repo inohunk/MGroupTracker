@@ -79,6 +79,7 @@ class TrackingService : Service(), BeaconConsumer {
         mDatabaseManager = DatabaseManager(this)
 
         initBeaconManager()
+        startOnClick()
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -87,15 +88,15 @@ class TrackingService : Service(), BeaconConsumer {
 
     override fun onDestroy() {
         stopOnClick()
-        exitProcess(1)
     }
 
     private fun initBeaconManager() {
         mBeaconManager = BeaconManager.getInstanceForApplication(this)
         mBeaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"))
 
-        mBuilder = NotificationCompat.Builder(this,CHANNEL_ID)
-        mBuilder!!.setSmallIcon(R.drawable.notification_icon_background)
+    private fun createNotification() {
+        mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+        mBuilder!!.setSmallIcon(R.drawable.ic_stat_name)
         mBuilder!!.setContentTitle("Scanning for Controls")
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -108,7 +109,6 @@ class TrackingService : Service(), BeaconConsumer {
                 "Controls Notification", NotificationManager.IMPORTANCE_DEFAULT
             )
             channel.description = "Controls Notification Channel"
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
             mBuilder!!.setChannelId(channel.id)
         }
@@ -116,7 +116,6 @@ class TrackingService : Service(), BeaconConsumer {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             mBeaconManager.enableForegroundServiceScanning(mBuilder!!.build(), 456)
         }
-        mBeaconManager.setEnableScheduledScanJobs(false)
     }
 
     override fun onBeaconServiceConnect() {
@@ -181,7 +180,6 @@ class TrackingService : Service(), BeaconConsumer {
         mCnt = 0
         mPunches.clear()
         mBeaconManager.bind(this)
-        mTrackingState = STATE_ON
 
         updateWakeLock()
     }
@@ -190,9 +188,10 @@ class TrackingService : Service(), BeaconConsumer {
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
 
-        mTrackingState = STATE_OFF
 
         updateWakeLock()
+        mDatabaseManager.actionStopEvent()
+        mTrackingState = STATE_OFF
 
     }
 
