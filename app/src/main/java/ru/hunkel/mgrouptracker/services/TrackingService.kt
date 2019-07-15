@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import org.altbeacon.beacon.*
 import ru.hunkel.mgrouptracker.ITrackingService
+import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.utils.STATE_OFF
@@ -21,7 +22,6 @@ import ru.hunkel.mgrouptracker.utils.STATE_ON
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.floor
-import kotlin.system.exitProcess
 
 
 class TrackingService : Service(), BeaconConsumer {
@@ -92,7 +92,10 @@ class TrackingService : Service(), BeaconConsumer {
 
     private fun initBeaconManager() {
         mBeaconManager = BeaconManager.getInstanceForApplication(this)
+        mBeaconManager.backgroundMode = true
         mBeaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"))
+        mBeaconManager.setEnableScheduledScanJobs(false)
+    }
 
     private fun createNotification() {
         mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -102,7 +105,10 @@ class TrackingService : Service(), BeaconConsumer {
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
         )
+
         mBuilder!!.setContentIntent(pendingIntent)
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "Controls Notification Channel",
@@ -115,6 +121,8 @@ class TrackingService : Service(), BeaconConsumer {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             mBeaconManager.enableForegroundServiceScanning(mBuilder!!.build(), 456)
+        } else {
+            notificationManager.notify(1, mBuilder!!.build())
         }
     }
 
@@ -181,7 +189,11 @@ class TrackingService : Service(), BeaconConsumer {
         mPunches.clear()
         mBeaconManager.bind(this)
 
+        createNotification()
         updateWakeLock()
+
+        mDatabaseManager.actionStartEvent()
+        mTrackingState = STATE_ON
     }
 
     fun stopOnClick() {
