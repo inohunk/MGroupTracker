@@ -13,10 +13,10 @@ import androidx.room.PrimaryKey
 )
 data class GPSPoint(
     @PrimaryKey(autoGenerate = true)
-    var id: Long,
+    var id: Int,
 
     @ColumnInfo(name = "event_id")
-    var eventId: Long,
+    var eventId: Int,
 
     var time: Long,
 
