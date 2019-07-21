@@ -15,17 +15,24 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity
+                android:name=".activities.TrackingSettings"
+                android:label="@string/title_activity_tracking_settings"
+                android:parentActivityName=".activities.MainActivity">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="ru.hunkel.mgrouptracker.activities.MainActivity"/>
+        </activity>
+
         <service
                 android:name=".services.TrackingService"
                 android:enabled="true"
-                android:exported="true"
-        >
+                android:exported="true">
         </service>
 
         <activity
                 android:name=".activities.MainActivity"
-                android:launchMode="singleInstance"
-        >
+                android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
