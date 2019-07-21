@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import ru.hunkel.mgrouptracker.database.entities.Event
+import ru.hunkel.mgrouptracker.database.entities.Punches
 
 /**
  * Interface for communicate with database
@@ -12,6 +13,7 @@ import ru.hunkel.mgrouptracker.database.entities.Event
 @Dao
 interface TrackingDao {
 
+    //Events
     @Insert
     fun addEvent(event: Event)
 

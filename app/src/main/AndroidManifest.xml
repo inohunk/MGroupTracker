@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
             android:allowBackup="true"
@@ -17,10 +18,14 @@
         <service
                 android:name=".services.TrackingService"
                 android:enabled="true"
-                android:exported="false">
+                android:exported="true"
+        >
         </service>
 
-        <activity android:name=".activities.MainActivity">
+        <activity
+                android:name=".activities.MainActivity"
+                android:launchMode="singleInstance"
+        >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

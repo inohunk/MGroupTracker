@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         VARIABLES
     */
     var mTrackingService: ITrackingService? = null
+    var mServiceBounded = false
 
     private val mTrackingServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_AUTO_CREATE)
 
         updateUIWithCurrentState(true)
+        mServiceBounded = true
     }
 
     private fun stopServiceOnClick() {
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         stopService(Intent(this, TrackingService::class.java))
 
         updateUIWithCurrentState(false)
+        mServiceBounded = false
     }
 
     private fun updateUIWithCurrentState(state: Boolean) {
@@ -68,6 +71,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindService(mTrackingServiceConnection)
+        if (mServiceBounded) {
+            unbindService(mTrackingServiceConnection)
+        }
     }
 }
