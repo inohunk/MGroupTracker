@@ -1,11 +1,9 @@
 package ru.hunkel.mgrouptracker.services
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -134,11 +132,25 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    private fun createNotificationForControlPoint(controlPoint: Int) {
+        mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+        mBuilder!!.setSmallIcon(R.drawable.ic_stat_name)
+        mBuilder!!.setContentTitle("Новый контрольный пункт!")
+        mBuilder!!.setContentText("$controlPoint")
+//        mBuilder!!.setDefaults(NotificationCompat.DEFAULT_SOUND)
+        mBuilder!!.setSound(Uri.parse("android.resource://ru.hunkel.mgrouptracker/"+R.raw.notification_sound))
+        mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        notificationManager.notify(2, mBuilder!!.build())
+
+    }
+
     override fun onBeaconServiceConnect() {
         mBeaconManager.removeAllRangeNotifiers()
-        mBeaconManager.foregroundScanPeriod = 1000L
+        mBeaconManager.foregroundScanPeriod = 500
         mBeaconManager.backgroundBetweenScanPeriod = 0L
-        mBeaconManager.backgroundScanPeriod = 3000L
+        mBeaconManager.backgroundScanPeriod = 500
         mBeaconManager.foregroundBetweenScanPeriod = 0L
         mBeaconManager.applySettings()
 
@@ -149,6 +161,9 @@ class TrackingService : Service(), BeaconConsumer {
 
                 while (iterator.hasNext()) {
                     val beacon = iterator.next()
+                    if (beacon.distance < 4.5) {
+                        checkInList(beacon.id3.toInt())
+                    }
                     Log.i(
                         TAG, "FOUNDED BEACON:\n" +
                                 "\tid1: ${beacon.id1}\n" +
@@ -193,6 +208,7 @@ class TrackingService : Service(), BeaconConsumer {
                 controlPoint = cp
             )
             mDatabaseManager.actionAddPunch(punch)
+            createNotificationForControlPoint(cp)
             Log.i(TAG, "added to list")
             false
         }
