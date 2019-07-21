@@ -170,7 +170,13 @@ class TrackingService : Service(), BeaconConsumer {
 
         try {
             val major = Identifier.fromInt(0xCDBF)
-            mBeaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, major, null))
+            val region = Region(
+                "cpSearch",
+                null,
+                major,
+                null
+            )
+            mBeaconManager.startRangingBeaconsInRegion(region)
 
         } catch (e: RemoteException) {
             Log.e(TAG, e.message)
@@ -196,7 +202,6 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     fun startOnClick() {
-//        stopOnClick()
         mCnt = 0
         mPunches.clear()
         mBeaconManager.bind(this)
@@ -232,7 +237,7 @@ class TrackingService : Service(), BeaconConsumer {
                 }
                 mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG)
                 mWakeLock!!.apply {
-                    acquire(10 * 60 * 1000L /*10 minutes*/)
+                    acquire()
                 }
                 Log.i(TAG + "WAKELOCK", "ACQUIRE")
             }
