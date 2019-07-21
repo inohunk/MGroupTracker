@@ -33,7 +33,7 @@ class DatabaseManager(context: Context) {
 
     }
 
-    fun actionGetLastEvent() {
+    fun actionGetLastEvent(): Event {
         val event = mDb.trackingModel().getLastEvent()
 
         Log.i(
@@ -43,6 +43,7 @@ class DatabaseManager(context: Context) {
                     "start time: ${convertLongToTime(event.startTime)}\n\t" +
                     "end time: ${convertLongToTime(event.endTime)}\n"
         )
+        return event
     }
 
     fun convertLongToTime(time: Long): String {
