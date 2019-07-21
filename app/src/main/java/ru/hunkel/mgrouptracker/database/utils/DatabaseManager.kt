@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import ru.hunkel.mgrouptracker.database.TrackingDatabase
 import ru.hunkel.mgrouptracker.database.entities.Event
+import ru.hunkel.mgrouptracker.database.entities.Punches
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -48,5 +49,17 @@ class DatabaseManager(context: Context) {
         val date = Date(time)
         val format = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
         return format.format(date)
+    }
+
+    fun actionAddPunch(punch: Punches){
+        mDb.trackingModel().addPunch(punch)
+        val lastPunch = mDb.trackingModel().getLastPunch()
+
+        Log.i(TAG,"" +
+                "Adding punch:\n" +
+                "id: ${lastPunch.id}\n" +
+                "event id: ${lastPunch.eventId}\n" +
+                "control point: ${lastPunch.controlPoint}\n" +
+                "time: ${convertLongToTime(lastPunch.time)}\n")
     }
 }
