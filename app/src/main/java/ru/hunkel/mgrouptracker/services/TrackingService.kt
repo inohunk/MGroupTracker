@@ -78,6 +78,7 @@ class TrackingService : Service(), BeaconConsumer {
     override fun onCreate() {
         mDatabaseManager = DatabaseManager(this)
 
+        checkBeaconSupport()
         initBeaconManager()
         startOnClick()
     }
@@ -95,6 +96,17 @@ class TrackingService : Service(), BeaconConsumer {
         mBeaconManager.backgroundMode = true
         mBeaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"))
         mBeaconManager.setEnableScheduledScanJobs(false)
+    }
+
+    private fun checkBeaconSupport() {
+        when (BeaconTransmitter.checkTransmissionSupported(this)) {
+            BeaconTransmitter.NOT_SUPPORTED_MIN_SDK -> Log.i(TAG, "CHECKING SUPPORT: not supported but min sdk")
+            BeaconTransmitter.NOT_SUPPORTED_CANNOT_GET_ADVERTISER,
+            BeaconTransmitter.NOT_SUPPORTED_CANNOT_GET_ADVERTISER_MULTIPLE_ADVERTISEMENTS
+            -> Log.i(TAG, "CHECKING SUPPORT: not supported but device have not api")
+            BeaconTransmitter.NOT_SUPPORTED_BLE -> Log.i(TAG, "CHECKING SUPPORT: not supported but bluetooth problem")
+            BeaconTransmitter.SUPPORTED -> Log.i(TAG, "CHECKING SUPPORT: supported")
+        }
     }
 
     private fun createNotification() {
