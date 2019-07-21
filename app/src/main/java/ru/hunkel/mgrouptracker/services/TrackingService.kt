@@ -160,8 +160,7 @@ class TrackingService : Service(), BeaconConsumer {
                                 "\trssi: ${beacon.rssi}\n" +
                                 "\tdistance: ${beacon.distance}\n"
                     )
-                    checkInList(beacon.id2.toInt())
-
+                    checkInList(beacon.id3.toInt())
                 }
 
 
