@@ -22,5 +22,12 @@ interface TrackingDao {
     fun getEventById(id: Int): Event
 
     @Query("SELECT * FROM events ORDER BY ID DESC LIMIT 1")
-    fun getLastEvent():Event
+    fun getLastEvent(): Event
+
+    //Punches
+    @Insert
+    fun addPunch(punch: Punches)
+
+    @Query("SELECT * FROM punches ORDER BY ID DESC LIMIT 1")
+    fun getLastPunch(): Punches
 }
