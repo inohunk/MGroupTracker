@@ -1,6 +1,9 @@
 package ru.hunkel.mgrouptracker.services
 
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -138,7 +141,7 @@ class TrackingService : Service(), BeaconConsumer {
         mBuilder!!.setContentTitle("Новый контрольный пункт!")
         mBuilder!!.setContentText("$controlPoint")
 //        mBuilder!!.setDefaults(NotificationCompat.DEFAULT_SOUND)
-        mBuilder!!.setSound(Uri.parse("android.resource://ru.hunkel.mgrouptracker/"+R.raw.notification_sound))
+        mBuilder!!.setSound(Uri.parse("android.resource://ru.hunkel.mgrouptracker/" + R.raw.notification_sound))
         mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -154,6 +157,10 @@ class TrackingService : Service(), BeaconConsumer {
         mBeaconManager.foregroundBetweenScanPeriod = 0L
         mBeaconManager.applySettings()
 
+        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+
+        val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
+        Log.i(TAG + "DISTANCE", distance.toString())
         mBeaconManager.addRangeNotifier { beacons, region ->
             updateWakeLock()
             if (beacons.isNotEmpty()) {
@@ -161,7 +168,7 @@ class TrackingService : Service(), BeaconConsumer {
 
                 while (iterator.hasNext()) {
                     val beacon = iterator.next()
-                    if (beacon.distance < 4.5) {
+                    if (beacon.distance <= distance) {
                         checkInList(beacon.id3.toInt())
                     }
                     Log.i(
