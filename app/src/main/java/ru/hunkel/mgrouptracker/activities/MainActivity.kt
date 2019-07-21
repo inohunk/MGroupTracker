@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.hunkel.mgrouptracker.ITrackingService
@@ -42,6 +44,18 @@ class MainActivity : AppCompatActivity() {
             stopServiceOnClick()
         }
         updateUIWithCurrentState(false)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.overflow_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.settings_button -> startActivity(Intent(this, TrackingSettings::class.java))
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun startServiceOnClick() {
