@@ -144,7 +144,6 @@ class TrackingService : Service(), BeaconConsumer {
 
         mBeaconManager.addRangeNotifier { beacons, region ->
             updateWakeLock()
-
             if (beacons.isNotEmpty()) {
                 val iterator = beacons.iterator()
 
@@ -160,7 +159,6 @@ class TrackingService : Service(), BeaconConsumer {
                                 "\trssi: ${beacon.rssi}\n" +
                                 "\tdistance: ${beacon.distance}\n"
                     )
-                    checkInList(beacon.id3.toInt())
                 }
 
 
@@ -219,6 +217,7 @@ class TrackingService : Service(), BeaconConsumer {
 
         updateWakeLock()
         mDatabaseManager.actionStopEvent()
+        mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
         mTrackingState = STATE_OFF
 
     }

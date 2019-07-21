@@ -63,4 +63,13 @@ class DatabaseManager(context: Context) {
                 "control point: ${lastPunch.controlPoint}\n" +
                 "time: ${convertLongToTime(lastPunch.time)}\n")
     }
+
+    fun actionGetPunchesByEventId(id:Int):List<Punches>{
+        val punches = mDb.trackingModel().getPunchesByEventId(id)
+        Log.i(TAG,"PUNCHES LIST:\n")
+        for (punch in punches){
+            Log.i(TAG,"\t${punch.controlPoint}\n")
+        }
+        return punches
+    }
 }

@@ -32,4 +32,7 @@ interface TrackingDao {
 
     @Query("SELECT * FROM punches ORDER BY ID DESC LIMIT 1")
     fun getLastPunch(): Punches
+
+    @Query("SELECT * FROM punches INNER JOIN events ON events.id = punches.event_id WHERE event_id = :id")
+    fun getPunchesByEventId(id: Int):List<Punches>
 }
