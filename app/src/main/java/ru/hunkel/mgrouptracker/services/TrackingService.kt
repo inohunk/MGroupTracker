@@ -16,12 +16,12 @@ import org.altbeacon.beacon.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.activities.MainActivity
+import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.utils.STATE_OFF
 import ru.hunkel.mgrouptracker.utils.STATE_ON
 import java.util.*
 import kotlin.math.abs
-import kotlin.math.floor
 
 
 class TrackingService : Service(), BeaconConsumer {
@@ -56,10 +56,6 @@ class TrackingService : Service(), BeaconConsumer {
         override fun startEvent() {
             mDatabaseManager.actionStartEvent()
             startOnClick()
-        }
-
-        override fun punch() {
-//            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
 
         override fun stopEvent() {
@@ -140,63 +136,67 @@ class TrackingService : Service(), BeaconConsumer {
 
     override fun onBeaconServiceConnect() {
         mBeaconManager.removeAllRangeNotifiers()
+        mBeaconManager.foregroundScanPeriod = 1000L
+        mBeaconManager.backgroundBetweenScanPeriod = 0L
+        mBeaconManager.backgroundScanPeriod = 3000L
+        mBeaconManager.foregroundBetweenScanPeriod = 0L
+        mBeaconManager.applySettings()
+
         mBeaconManager.addRangeNotifier { beacons, region ->
             updateWakeLock()
 
             if (beacons.isNotEmpty()) {
-                mCnt++
-                val it = beacons.iterator()
-                var bcn: Beacon?
-                var mnr: Int
-                var i: Int
-                var totalPoints = 0
+                val iterator = beacons.iterator()
 
+                while (iterator.hasNext()) {
+                    val beacon = iterator.next()
+                    Log.i(
+                        TAG, "FOUNDED BEACON:\n" +
+                                "\tid1: ${beacon.id1}\n" +
+                                "\tid2: ${beacon.id2}\n" +
+                                "\tid3: ${beacon.id3}\n" +
+                                "\tmanufacturer: ${beacon.manufacturer}\n" +
+                                "\ttxPower: ${beacon.txPower}\n" +
+                                "\trssi: ${beacon.rssi}\n" +
+                                "\tdistance: ${beacon.distance}\n"
+                    )
+                    checkInList(beacon.id2.toInt())
 
-                while (it.hasNext()) {
-                    bcn = it.next()
-                    if (bcn == null || Integer.parseInt(bcn.id2.toString()) != 0xCDBF) continue
-                    mnr = Integer.parseInt(bcn.id3.toString())
-
-                    if (mPunches.size > 0) {
-                        i = 0
-                        while (i < mPunches.size) {
-                            if (mPunches[i] === mnr) {
-                                mnr = -1
-                                break
-                            }
-                            i++
-                        }
-                    }
-
-                    if (mnr != -1) mPunches.add(mnr)
                 }
 
-                var s = "*** $mCnt ***"
-                if (mPunches.size > 0) {
-                    i = 0
-                    while (i < mPunches.size) {
-                        s += "\n" + mPunches[i]
-                        totalPoints += floor((mPunches[i] / 10).toDouble()).toInt()
-                        i++
-                    }
-                }
-                s += "\n--------------\n$totalPoints"
 
-                Log.i(TAG, s)
             }
         }
 
         try {
-            mBeaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, null, null))
+            val major = Identifier.fromInt(0xCDBF)
+            mBeaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, major, null))
+
         } catch (e: RemoteException) {
             Log.e(TAG, e.message)
         }
 
     }
 
-    fun startOnClick() {
-        stopOnClick()
+    private fun checkInList(cp: Int): Boolean {
+        return if (mPunches.contains(cp)) {
+            Log.i(TAG, "already exists in list")
+            true
+        } else {
+            mPunches.add(cp)
+            val punch = Punches(
+                eventId = mDatabaseManager.actionGetLastEvent().id,
+                time = System.currentTimeMillis(),
+                controlPoint = cp
+            )
+            mDatabaseManager.actionAddPunch(punch)
+            Log.i(TAG, "added to list")
+            false
+        }
+    }
 
+    fun startOnClick() {
+//        stopOnClick()
         mCnt = 0
         mPunches.clear()
         mBeaconManager.bind(this)
@@ -230,9 +230,11 @@ class TrackingService : Service(), BeaconConsumer {
                     this.mWakeLock!!.release()
                     this.mWakeLock = null
                 }
-
-                this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG)
-                this.mWakeLock!!.acquire()
+                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG)
+                mWakeLock!!.apply {
+                    acquire(10 * 60 * 1000L /*10 minutes*/)
+                }
+                Log.i(TAG + "WAKELOCK", "ACQUIRE")
             }
         } else {
             mLastLockUpdateMillis = 0
@@ -240,6 +242,8 @@ class TrackingService : Service(), BeaconConsumer {
                 this.mWakeLock!!.release()
                 this.mWakeLock = null
             }
+            Log.i(TAG + "WAKELOCK", "RELEASED")
+
         }
     }
 }
