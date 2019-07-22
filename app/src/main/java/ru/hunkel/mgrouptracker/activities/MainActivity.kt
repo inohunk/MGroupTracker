@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         stop_event_button.isEnabled = state
     }
 
+    override fun onBackPressed() {}
     override fun onDestroy() {
         super.onDestroy()
         if (mServiceBounded) {
@@ -107,10 +108,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun acceptPermissions(permissions: Array<String>): Boolean {
-        var grandted = false
+        var grandted = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (permission in permissions) {
-                grandted = if (
+                if (
                     (checkSelfPermission((permission)) != PackageManager.PERMISSION_GRANTED)
                     and
                     (shouldShowRequestPermissionRationale(permission))
@@ -120,9 +121,7 @@ class MainActivity : AppCompatActivity() {
                         "Разрешение на местоположение необходимо для записи ваших треков",
                         Toast.LENGTH_LONG
                     ).show()
-                    false
-                } else {
-                    true
+                    grandted = false
                 }
             }
             requestPermissions(permissions, 1)
