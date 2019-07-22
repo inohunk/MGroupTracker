@@ -4,8 +4,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.net.Uri
@@ -25,6 +27,7 @@ import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.utils.STATE_OFF
 import ru.hunkel.mgrouptracker.utils.STATE_ON
+import ru.hunkel.servicesipc.ILocationService
 import java.util.*
 import kotlin.math.abs
 
@@ -54,6 +57,46 @@ class TrackingService : Service(), BeaconConsumer {
     */
     private lateinit var mDatabaseManager: DatabaseManager
 
+    //LOCATION SERVICE
+    var locationService: ILocationService? = null
+    var isServiceConnected = false
+
+    private val locationServiceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+            locationService = null
+            Log.i(TAG, "locationService disconnected")
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            locationService = ILocationService.Stub.asInterface(service)
+            isServiceConnected = true
+            Log.i(
+                TAG, "locationService connected" +
+                        "\ncomponent name: ${name.toString()}"
+            )
+        }
+    }
+
+    private fun startLocationService() {
+        val serviceIntent = Intent()
+        serviceIntent.component = ComponentName(
+            "ru.hunkel.servicesipc",
+            "ru.hunkel.servicesipc.services.LocationService"
+        )
+        val res = bindService(
+            serviceIntent,
+            locationServiceConnection,
+            Context.BIND_AUTO_CREATE
+        )
+        Log.i(TAG + "TEST", "Service started: $res")
+
+    }
+
+    private fun stopLocationService() {
+        locationService!!.stopTracking()
+        unbindService(locationServiceConnection)
+    }
+
     /*
         INNER CLASSES
     */
@@ -82,6 +125,7 @@ class TrackingService : Service(), BeaconConsumer {
         checkBeaconSupport()
         initBeaconManager()
         startOnClick()
+        startLocationService()
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -90,6 +134,7 @@ class TrackingService : Service(), BeaconConsumer {
 
     override fun onDestroy() {
         stopOnClick()
+        stopLocationService()
     }
 
     private fun initBeaconManager() {
@@ -257,13 +302,10 @@ class TrackingService : Service(), BeaconConsumer {
     fun stopOnClick() {
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
-
-
         updateWakeLock()
         mDatabaseManager.actionStopEvent()
         mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
         mTrackingState = STATE_OFF
-
     }
 
     private fun updateWakeLock() {
