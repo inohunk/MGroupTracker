@@ -112,8 +112,8 @@ class TrackingService : Service(), BeaconConsumer {
 
     private fun createNotification() {
         mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-        mBuilder!!.setSmallIcon(R.drawable.ic_running)
-        mBuilder!!.setContentTitle("Scanning for Controls")
+        mBuilder!!.setSmallIcon(R.drawable.ic_main_icon)
+        mBuilder!!.setContentTitle("Соревнование идет!")
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
@@ -183,31 +183,28 @@ class TrackingService : Service(), BeaconConsumer {
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         Log.i(TAG + "DISTANCE", distance.toString())
         mBeaconManager.addRangeNotifier { beacons, region ->
-            try {
-                updateWakeLock()
-                if (beacons.isNotEmpty()) {
-                    val iterator = beacons.iterator()
 
-                    while (iterator.hasNext()) {
-                        val beacon = iterator.next()
-                        if (beacon.distance <= distance) {
-                            checkInList(beacon.id3.toInt())
-                        }
-                        Log.i(
-                            TAG, "FOUNDED BEACON:\n" +
-                                    "\tid1: ${beacon.id1}\n" +
-                                    "\tid2: ${beacon.id2}\n" +
-                                    "\tid3: ${beacon.id3}\n" +
-                                    "\tmanufacturer: ${beacon.manufacturer}\n" +
-                                    "\ttxPower: ${beacon.txPower}\n" +
-                                    "\trssi: ${beacon.rssi}\n" +
-                                    "\tdistance: ${beacon.distance}\n"
-                        )
+            updateWakeLock()
+            if (beacons.isNotEmpty()) {
+                val iterator = beacons.iterator()
+
+                while (iterator.hasNext()) {
+                    val beacon = iterator.next()
+                    if (beacon.distance <= distance) {
+                        checkInList(beacon.id3.toInt())
                     }
-
+                    Log.i(
+                        TAG, "FOUNDED BEACON:\n" +
+                                "\tid1: ${beacon.id1}\n" +
+                                "\tid2: ${beacon.id2}\n" +
+                                "\tid3: ${beacon.id3}\n" +
+                                "\tmanufacturer: ${beacon.manufacturer}\n" +
+                                "\ttxPower: ${beacon.txPower}\n" +
+                                "\trssi: ${beacon.rssi}\n" +
+                                "\tdistance: ${beacon.distance}\n"
+                    )
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, e.message)
+
             }
         }
 
