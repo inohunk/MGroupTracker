@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
@@ -13,6 +15,8 @@ import android.os.PowerManager
 import android.os.RemoteException
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import org.altbeacon.beacon.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
@@ -108,7 +112,7 @@ class TrackingService : Service(), BeaconConsumer {
 
     private fun createNotification() {
         mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-        mBuilder!!.setSmallIcon(R.drawable.ic_stat_name)
+        mBuilder!!.setSmallIcon(R.drawable.ic_running)
         mBuilder!!.setContentTitle("Scanning for Controls")
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -135,12 +139,29 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+
+    private fun getBitmap(context: Context, drawableId: Int): Bitmap {
+        var drawable = ContextCompat.getDrawable(context, drawableId)!!
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = DrawableCompat.wrap(drawable).mutate()
+        }
+
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight, Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+
     private fun createNotificationForControlPoint(controlPoint: Int) {
         mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-        mBuilder!!.setSmallIcon(R.drawable.ic_stat_name)
+        mBuilder!!.setSmallIcon(R.drawable.ic_control_point)
+        mBuilder!!.setLargeIcon(getBitmap(this, R.drawable.ic_control_point))
         mBuilder!!.setContentTitle("Новый контрольный пункт!")
         mBuilder!!.setContentText("$controlPoint")
-//        mBuilder!!.setDefaults(NotificationCompat.DEFAULT_SOUND)
         mBuilder!!.setSound(Uri.parse("android.resource://ru.hunkel.mgrouptracker/" + R.raw.notification_sound))
         mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
