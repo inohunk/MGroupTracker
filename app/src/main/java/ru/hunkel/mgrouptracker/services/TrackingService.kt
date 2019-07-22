@@ -45,7 +45,9 @@ class TrackingService : Service(), BeaconConsumer {
     private var mBuilder: NotificationCompat.Builder? = null
     private val CHANNEL_ID = "TrackingNotifications"
     private var mCnt = 0
-    private val mPunches = LinkedList<Int>()
+    private val mPunchesIdentifiers = LinkedList<Int>()
+    private val mPunches = LinkedList<Punches>()
+
 
     private var mTrackingState = STATE_OFF
 
@@ -225,16 +227,30 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     private fun checkInList(cp: Int): Boolean {
-        return if (mPunches.contains(cp)) {
+        return if (mPunchesIdentifiers.contains(cp)) {
             Log.i(TAG, "already exists in list")
+            val punch = findPunchByControlPoint(cp)
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - punch.time > 10000) {
+                Log.i(TAG, "TIME FOR CONTROL POINT NEED TO BE UPDATED")
+                val newPunch = Punches(
+                    eventId = mDatabaseManager.actionGetLastEvent().id,
+                    time = System.currentTimeMillis(),
+                    controlPoint = cp
+                )
+                mPunches.remove(punch)
+                mPunches.add(newPunch)
+                mDatabaseManager.actionAddPunch(newPunch)
+            }
             true
         } else {
-            mPunches.add(cp)
             val punch = Punches(
                 eventId = mDatabaseManager.actionGetLastEvent().id,
                 time = System.currentTimeMillis(),
                 controlPoint = cp
             )
+            mPunchesIdentifiers.add(cp)
+            mPunches.add(punch)
             mDatabaseManager.actionAddPunch(punch)
             createNotificationForControlPoint(cp)
             Log.i(TAG, "added to list")
@@ -242,9 +258,20 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    private fun findPunchByControlPoint(cp: Int): Punches {
+        var punch: Punches = Punches(0, 0, 0, 0)
+
+        for (p in mPunches) {
+            if (p.controlPoint == cp) {
+                punch = p
+            }
+        }
+        return punch
+    }
+
     fun startOnClick() {
         mCnt = 0
-        mPunches.clear()
+        mPunchesIdentifiers.clear()
         mBeaconManager.bind(this)
 
         createNotification()
