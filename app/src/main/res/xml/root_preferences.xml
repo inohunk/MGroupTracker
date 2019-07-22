@@ -24,4 +24,10 @@
             app:defaultValue="3"
             android:icon="@drawable/ic_baseline_speaker_phone_24px"
             app:useSimpleSummaryProvider="true"/>
+    <EditTextPreference
+            app:key="beacon_scan_period"
+            app:title="Период сканирования"
+            app:defaultValue="1"
+            android:icon="@drawable/ic_search_period"
+            app:useSimpleSummaryProvider="true"/>
 </androidx.preference.PreferenceScreen>

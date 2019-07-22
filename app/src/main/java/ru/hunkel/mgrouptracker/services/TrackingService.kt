@@ -174,15 +174,19 @@ class TrackingService : Service(), BeaconConsumer {
 
     override fun onBeaconServiceConnect() {
         mBeaconManager.removeAllRangeNotifiers()
-        mBeaconManager.foregroundScanPeriod = 500
-        mBeaconManager.backgroundBetweenScanPeriod = 0L
-        mBeaconManager.backgroundScanPeriod = 500
-        mBeaconManager.foregroundBetweenScanPeriod = 0L
-        mBeaconManager.applySettings()
+
 
         val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
 
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
+        val scanPeriod = (pm.getString("beacon_scan_period","1")!!.toFloat()*1000).toLong()
+
+        mBeaconManager.foregroundScanPeriod = scanPeriod
+        mBeaconManager.backgroundBetweenScanPeriod = 0L
+        mBeaconManager.backgroundScanPeriod = scanPeriod
+        mBeaconManager.foregroundBetweenScanPeriod = 0L
+        mBeaconManager.applySettings()
+
         Log.i(TAG + "DISTANCE", distance.toString())
         mBeaconManager.addRangeNotifier { beacons, region ->
 
