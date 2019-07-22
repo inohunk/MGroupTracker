@@ -183,28 +183,31 @@ class TrackingService : Service(), BeaconConsumer {
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         Log.i(TAG + "DISTANCE", distance.toString())
         mBeaconManager.addRangeNotifier { beacons, region ->
-            updateWakeLock()
-            if (beacons.isNotEmpty()) {
-                val iterator = beacons.iterator()
+            try {
+                updateWakeLock()
+                if (beacons.isNotEmpty()) {
+                    val iterator = beacons.iterator()
 
-                while (iterator.hasNext()) {
-                    val beacon = iterator.next()
-                    if (beacon.distance <= distance) {
-                        checkInList(beacon.id3.toInt())
+                    while (iterator.hasNext()) {
+                        val beacon = iterator.next()
+                        if (beacon.distance <= distance) {
+                            checkInList(beacon.id3.toInt())
+                        }
+                        Log.i(
+                            TAG, "FOUNDED BEACON:\n" +
+                                    "\tid1: ${beacon.id1}\n" +
+                                    "\tid2: ${beacon.id2}\n" +
+                                    "\tid3: ${beacon.id3}\n" +
+                                    "\tmanufacturer: ${beacon.manufacturer}\n" +
+                                    "\ttxPower: ${beacon.txPower}\n" +
+                                    "\trssi: ${beacon.rssi}\n" +
+                                    "\tdistance: ${beacon.distance}\n"
+                        )
                     }
-                    Log.i(
-                        TAG, "FOUNDED BEACON:\n" +
-                                "\tid1: ${beacon.id1}\n" +
-                                "\tid2: ${beacon.id2}\n" +
-                                "\tid3: ${beacon.id3}\n" +
-                                "\tmanufacturer: ${beacon.manufacturer}\n" +
-                                "\ttxPower: ${beacon.txPower}\n" +
-                                "\trssi: ${beacon.rssi}\n" +
-                                "\tdistance: ${beacon.distance}\n"
-                    )
+
                 }
-
-
+            } catch (e: Exception) {
+                Log.e(TAG, e.message)
             }
         }
 
