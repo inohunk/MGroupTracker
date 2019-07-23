@@ -46,29 +46,35 @@ class DatabaseManager(context: Context) {
         return event
     }
 
+    fun actionGetAllEvents(): List<Event> {
+        return mDb.trackingModel().getAllEvents()
+    }
+
     fun convertLongToTime(time: Long): String {
         val date = Date(time)
         val format = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
         return format.format(date)
     }
 
-    fun actionAddPunch(punch: Punches){
+    fun actionAddPunch(punch: Punches) {
         mDb.trackingModel().addPunch(punch)
         val lastPunch = mDb.trackingModel().getLastPunch()
 
-        Log.i(TAG,"" +
-                "Adding punch:\n" +
-                "id: ${lastPunch.id}\n" +
-                "event id: ${lastPunch.eventId}\n" +
-                "control point: ${lastPunch.controlPoint}\n" +
-                "time: ${convertLongToTime(lastPunch.time)}\n")
+        Log.i(
+            TAG, "" +
+                    "Adding punch:\n" +
+                    "id: ${lastPunch.id}\n" +
+                    "event id: ${lastPunch.eventId}\n" +
+                    "control point: ${lastPunch.controlPoint}\n" +
+                    "time: ${convertLongToTime(lastPunch.time)}\n"
+        )
     }
 
-    fun actionGetPunchesByEventId(id:Int):List<Punches>{
+    fun actionGetPunchesByEventId(id: Int): List<Punches> {
         val punches = mDb.trackingModel().getPunchesByEventId(id)
-        Log.i(TAG,"PUNCHES LIST:\n")
-        for (punch in punches){
-            Log.i(TAG,"\t${punch.controlPoint}\n")
+        Log.i(TAG, "PUNCHES LIST:\n")
+        for (punch in punches) {
+            Log.i(TAG, "\t${punch.controlPoint}\n")
         }
         return punches
     }

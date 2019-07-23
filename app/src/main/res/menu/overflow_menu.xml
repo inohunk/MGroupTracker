@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="Logs" app:showAsAction="always" android:icon="@drawable/ic_info"/>
+    <item android:title="Logs" app:showAsAction="always" android:icon="@drawable/ic_info"
+          android:id="@+id/info_button"/>
     <item android:title="Settings" android:icon="@drawable/ic_settings" android:id="@+id/settings_button"
           app:showAsAction="always"/>
 </menu>

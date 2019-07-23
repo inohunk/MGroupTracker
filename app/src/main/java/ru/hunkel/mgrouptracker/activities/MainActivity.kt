@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.settings_button -> startActivity(Intent(this, TrackingSettings::class.java))
+            R.id.info_button -> startActivity(Intent(this,InfoActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
     }
