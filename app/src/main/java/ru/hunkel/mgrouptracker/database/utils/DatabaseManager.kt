@@ -5,8 +5,7 @@ import android.util.Log
 import ru.hunkel.mgrouptracker.database.TrackingDatabase
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
-import java.text.SimpleDateFormat
-import java.util.*
+import ru.hunkel.mgrouptracker.utils.convertLongToTime
 
 
 class DatabaseManager(context: Context) {
@@ -48,12 +47,6 @@ class DatabaseManager(context: Context) {
 
     fun actionGetAllEvents(): List<Event> {
         return mDb.trackingModel().getAllEvents()
-    }
-
-    fun convertLongToTime(time: Long): String {
-        val date = Date(time)
-        val format = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
-        return format.format(date)
     }
 
     fun actionAddPunch(punch: Punches) {
