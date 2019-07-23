@@ -13,6 +13,8 @@ import kotlinx.android.synthetic.main.punch_list_item.view.*
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
+import ru.hunkel.mgrouptracker.utils.convertLongToTime
+
 const val KEY_EVENT_ID = "keyEvent"
 
 class PunchActivity : AppCompatActivity() {
@@ -51,7 +53,8 @@ class PunchActivity : AppCompatActivity() {
 
     private class PunchViewHolder(val view: View) : RecyclerView.ViewHolder(view){
         fun bind(punch: Punches){
-            view.punch_id_text_view.text = punch.controlPoint.toString()
+            view.punch_id_text_view.text = "Отметка на ${punch.controlPoint}"
+            view.punch_time_text_view.text = "Время отметки ${convertLongToTime(punch.time)}"
         }
     }
 }
