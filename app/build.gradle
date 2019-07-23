@@ -50,6 +50,6 @@ dependencies {
     implementation "org.altbeacon:android-beacon-library:$altbeacon_version"
 
     //RecyclerView
-    implementation 'androidx.recyclerview:recyclerview:1.1.0-beta01'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
 }
