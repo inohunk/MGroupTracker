@@ -5,6 +5,9 @@ import android.bluetooth.BluetoothAdapter
 const val STATE_OFF = 0
 const val STATE_ON = 1
 
+const val DEFAULT_LOCK_UPDATE_INTERVAL = 120 * 1000L //120 secs
+const val DEFAULT_CONTROL_POINT_UPDATE = 10 * 1000L //10 secs
+
 fun enableBluetooth(){
     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     mBluetoothAdapter.cancelDiscovery()

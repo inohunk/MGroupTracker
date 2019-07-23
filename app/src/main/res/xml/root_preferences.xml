@@ -30,4 +30,16 @@
             app:defaultValue="1"
             android:icon="@drawable/ic_search_period"
             app:useSimpleSummaryProvider="true"/>
+    <EditTextPreference
+            app:key="beacon_between_scan_period"
+            app:title="Промежуток сканирования"
+            app:defaultValue="0"
+            android:icon="@drawable/ic_search_period"
+            app:useSimpleSummaryProvider="true"/>
+    <EditTextPreference
+            app:key="beacon_update_interval"
+            app:title="Обновить время КП после"
+            app:defaultValue="10"
+            android:icon="@drawable/ic_search_period"
+            app:useSimpleSummaryProvider="true"/>
 </androidx.preference.PreferenceScreen>

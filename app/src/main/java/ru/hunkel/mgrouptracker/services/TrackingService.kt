@@ -23,38 +23,45 @@ import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
+import ru.hunkel.mgrouptracker.utils.DEFAULT_CONTROL_POINT_UPDATE
+import ru.hunkel.mgrouptracker.utils.DEFAULT_LOCK_UPDATE_INTERVAL
 import ru.hunkel.mgrouptracker.utils.STATE_OFF
 import ru.hunkel.mgrouptracker.utils.STATE_ON
 import java.util.*
 import kotlin.math.abs
 
-
 class TrackingService : Service(), BeaconConsumer {
-
-
-    companion object {
-        private const val WAKE_LOCK_TAG = "PunchingApp:WakeLockTag"
-        private const val LOCK_UPDATE_INTERVAL: Long = 120000 // 120sec 2min
-    }
-
-    private val TAG = "TrackingService"
-
-    private var mWakeLock: PowerManager.WakeLock? = null
-    private var mLastLockUpdateMillis: Long = 0
-    private lateinit var mBeaconManager: BeaconManager
-    private var mBuilder: NotificationCompat.Builder? = null
-    private val CHANNEL_ID = "TrackingNotifications"
-    private var mCnt = 0
-    private val mPunchesIdentifiers = LinkedList<Int>()
-    private val mPunches = LinkedList<Punches>()
-
-
-    private var mTrackingState = STATE_OFF
 
     /*
         VARIABLES
     */
+    companion object {
+        //TAG's
+        private const val TAG = "TrackingService"
+        private const val WAKE_LOCK_TAG = "PunchingApp:WakeLockTag"
+
+        //Notifications
+        private const val NOTIFICATION_CHANNEL_ID = "TrackingNotifications"
+        private const val NOTIFICATION_STATE_ID = 1
+        private const val NOTIFICATION_CONTROL_POINT_ID = 2
+
+        private const val LOCK_UPDATE_INTERVAL: Long = DEFAULT_LOCK_UPDATE_INTERVAL
+    }
+
+    private var mWakeLock: PowerManager.WakeLock? = null
+    private var mLastLockUpdateMillis: Long = 0
+
+    private lateinit var mBeaconManager: BeaconManager
+    private var mBuilder: NotificationCompat.Builder? = null
+
+    private var mTrackingState = STATE_OFF
+
     private lateinit var mDatabaseManager: DatabaseManager
+
+    private var updateControlPointAfter = DEFAULT_CONTROL_POINT_UPDATE
+    //Collections
+    private val mPunchesIdentifiers = LinkedList<Int>()
+    private val mPunches = LinkedList<Punches>()
 
     /*
         INNER CLASSES
@@ -113,7 +120,7 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     private fun createNotification() {
-        mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+        mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         mBuilder!!.setSmallIcon(R.drawable.ic_main_icon)
         mBuilder!!.setContentTitle("Соревнование идет!")
         val intent = Intent(this, MainActivity::class.java)
@@ -135,9 +142,9 @@ class TrackingService : Service(), BeaconConsumer {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            mBeaconManager.enableForegroundServiceScanning(mBuilder!!.build(), 456)
+            mBeaconManager.enableForegroundServiceScanning(mBuilder!!.build(), NOTIFICATION_STATE_ID)
         } else {
-            notificationManager.notify(1, mBuilder!!.build())
+            notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
         }
     }
 
@@ -159,7 +166,7 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     private fun createNotificationForControlPoint(controlPoint: Int) {
-        mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+        mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         mBuilder!!.setSmallIcon(R.drawable.ic_control_point)
         mBuilder!!.setLargeIcon(getBitmap(this, R.drawable.ic_control_point))
         mBuilder!!.setContentTitle("Новый контрольный пункт!")
@@ -168,23 +175,24 @@ class TrackingService : Service(), BeaconConsumer {
         mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        notificationManager.notify(2, mBuilder!!.build())
+        notificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
     }
 
     override fun onBeaconServiceConnect() {
         mBeaconManager.removeAllRangeNotifiers()
 
-
         val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
 
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
-        val scanPeriod = (pm.getString("beacon_scan_period","1")!!.toFloat()*1000).toLong()
+        val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
+        val betweenScanPeriod = (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
+        updateControlPointAfter = (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
 
         mBeaconManager.foregroundScanPeriod = scanPeriod
-        mBeaconManager.backgroundBetweenScanPeriod = 0L
+        mBeaconManager.backgroundBetweenScanPeriod = betweenScanPeriod
         mBeaconManager.backgroundScanPeriod = scanPeriod
-        mBeaconManager.foregroundBetweenScanPeriod = 0L
+        mBeaconManager.foregroundBetweenScanPeriod = betweenScanPeriod
         mBeaconManager.applySettings()
 
         Log.i(TAG + "DISTANCE", distance.toString())
@@ -235,7 +243,7 @@ class TrackingService : Service(), BeaconConsumer {
             Log.i(TAG, "already exists in list")
             val punch = findPunchByControlPoint(cp)
             val currentTime = System.currentTimeMillis()
-            if (currentTime - punch.time > 10000) {
+            if (currentTime - punch.time > updateControlPointAfter) {
                 Log.i(TAG, "TIME FOR CONTROL POINT NEED TO BE UPDATED")
                 val newPunch = Punches(
                     eventId = mDatabaseManager.actionGetLastEvent().id,
@@ -274,7 +282,6 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     fun startOnClick() {
-        mCnt = 0
         mPunchesIdentifiers.clear()
         mBeaconManager.bind(this)
 
@@ -288,7 +295,6 @@ class TrackingService : Service(), BeaconConsumer {
     fun stopOnClick() {
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
-
 
         updateWakeLock()
         mDatabaseManager.actionStopEvent()
