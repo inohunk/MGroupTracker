@@ -3,9 +3,8 @@ package ru.hunkel.mgrouptracker.activities
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,10 +17,21 @@ import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 
+const val ACTION_DELETE = 0
+
 class InfoActivity : AppCompatActivity() {
+
+    /*
+        VARIABLES
+    */
+    private var events: List<Event> = arrayListOf()
 
     private lateinit var mEventRecyclerView: RecyclerView
     private lateinit var mDatabaseManager: DatabaseManager
+
+    /*
+        FUNCTIONS
+    */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +41,35 @@ class InfoActivity : AppCompatActivity() {
         mEventRecyclerView.layoutManager = LinearLayoutManager(this)
         mDatabaseManager = DatabaseManager(this)
 
-        val events = mDatabaseManager.actionGetAllEvents()
+        events = mDatabaseManager.actionGetAllEvents()
         mEventRecyclerView.adapter = EventAdapter(events)
     }
 
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        when (item!!.itemId) {
+            ACTION_DELETE -> {
+                val event = events[item.order]
+                Log.i(
+                    "TEEEEST",
+                    "EVENT INFO:\n\t" +
+                            "id: ${event.id}\n\t" +
+                            "start time: ${convertLongToTime(event.startTime)}\n\t" +
+                            "end time: ${convertLongToTime(event.endTime)}\n"
+                )
+                mDatabaseManager.actionDeleteEvent(event)
+                mEventRecyclerView.removeViewAt(item.order)
+                mEventRecyclerView.adapter!!.notifyItemRemoved(item.order)
+                mEventRecyclerView.adapter!!.notifyItemRangeChanged(item.order, events.size)
+                mEventRecyclerView.adapter!!.notifyDataSetChanged()
+            }
+        }
+        return true
+    }
+
+
+    /*
+        INNER CLASSES
+    */
     private inner class EventAdapter(private val eventsList: List<Event>) : RecyclerView.Adapter<EventViewHolder>() {
         val colorList: IntArray = baseContext.resources.getIntArray(R.array.background_item_colors)
 
@@ -54,12 +89,27 @@ class InfoActivity : AppCompatActivity() {
             holder.view.background = dr
             holder.bind(eventsList[position])
             holder.view.setOnClickListener {
-                startActivity(Intent(this@InfoActivity, PunchActivity::class.java).putExtra(KEY_EVENT_ID, eventsList[position].id))
+                startActivity(
+                    Intent(this@InfoActivity, PunchActivity::class.java).putExtra(
+                        KEY_EVENT_ID,
+                        eventsList[position].id
+                    )
+                )
             }
         }
     }
 
-    private class EventViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    private class EventViewHolder(val view: View) : RecyclerView.ViewHolder(view), View.OnCreateContextMenuListener {
+
+        init {
+            view.setOnCreateContextMenuListener(this)
+        }
+
+        override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
+            menu!!.setHeaderTitle("Выберите действие")
+            menu.add(0, ACTION_DELETE, adapterPosition, "Удалить мероприятие")
+        }
+
         fun bind(event: Event) {
             view.event_id_text_view.text = "Мероприятие №${event.id}"
             view.event_start_time_text_view.text = "Время начала: ${convertLongToTime(event.startTime)}"

@@ -20,6 +20,13 @@ class DatabaseManager(context: Context) {
         )
         Log.i(TAG, "event started")
         mCurrentEvent = event
+        Log.i(
+            TAG,
+            "EVENT INFO:\n\t" +
+                    "id: ${event.id}\n\t" +
+                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
+                    "end time: ${convertLongToTime(event.endTime)}\n"
+        )
         mDb.trackingModel().addEvent(mCurrentEvent)
     }
 
@@ -46,7 +53,13 @@ class DatabaseManager(context: Context) {
     }
 
     fun actionGetAllEvents(): List<Event> {
-        return mDb.trackingModel().getAllEvents()
+        val events = mDb.trackingModel().getAllEvents()
+        Log.i(
+            TAG,
+            "EVENTS INFO:\n\t" +
+                    "size: ${events.size}\n\t"
+        )
+        return events
     }
 
     fun actionAddPunch(punch: Punches) {
@@ -70,5 +83,20 @@ class DatabaseManager(context: Context) {
             Log.i(TAG, "\t${punch.controlPoint}\n")
         }
         return punches
+    }
+
+    fun actionDeleteEvent(event: Event) {
+        Log.i(
+            TAG,
+            "REMOVED EVENT INFO:\n\t" +
+                    "id: ${event.id}\n\t" +
+                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
+                    "end time: ${convertLongToTime(event.endTime)}\n"
+        )
+        mDb.trackingModel().deleteEvent(event)
+    }
+
+    fun actionGetEventById(id: Int): Event {
+        return mDb.trackingModel().getEventById(id)
     }
 }
