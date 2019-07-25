@@ -12,7 +12,7 @@ import ru.hunkel.mgrouptracker.database.entities.Punches
 
 @Database(
     entities = [Event::class, GPSPoint::class, Punches::class],
-    version = 2
+    version = 3
 )
 abstract class TrackingDatabase : RoomDatabase() {
     abstract fun trackingModel(): TrackingDao

@@ -8,7 +8,12 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "punches",
     foreignKeys = [
-        ForeignKey(entity = Event::class, parentColumns = ["id"], childColumns = ["event_id"])
+        ForeignKey(
+            entity = Event::class,
+            parentColumns = ["id"],
+            childColumns = ["event_id"],
+            onDelete = ForeignKey.CASCADE
+        )
     ]
 )
 

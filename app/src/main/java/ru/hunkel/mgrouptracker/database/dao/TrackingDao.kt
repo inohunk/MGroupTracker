@@ -1,9 +1,6 @@
 package ru.hunkel.mgrouptracker.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
 
@@ -19,6 +16,9 @@ interface TrackingDao {
 
     @Update
     fun updateEvent(event: Event)
+
+    @Delete
+    fun deleteEvent(event: Event)
 
     @Query("SELECT * FROM events WHERE id = :id")
     fun getEventById(id: Int): Event
