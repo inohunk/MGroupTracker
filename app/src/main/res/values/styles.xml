@@ -8,4 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
+    <style name="ListItem">
+        <item name="android:background">@drawable/sh_list_item</item>
+    </style>
 </resources>
