@@ -9,4 +9,8 @@
         <item>reply</item>
         <item>reply_all</item>
     </string-array>
+    <array name="background_item_colors">
+        <item>#C8E6C9</item>
+        <item>#B3E5FC</item>
+    </array>
 </resources>

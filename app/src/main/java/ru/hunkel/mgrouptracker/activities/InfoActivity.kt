@@ -1,10 +1,12 @@
 package ru.hunkel.mgrouptracker.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +15,7 @@ import kotlinx.android.synthetic.main.event_list_item.view.*
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
+import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 
 class InfoActivity : AppCompatActivity() {
@@ -33,10 +36,11 @@ class InfoActivity : AppCompatActivity() {
     }
 
     private inner class EventAdapter(private val eventsList: List<Event>) : RecyclerView.Adapter<EventViewHolder>() {
+        val colorList: IntArray = baseContext.resources.getIntArray(R.array.background_item_colors)
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.event_list_item, parent, false)
-
             return EventViewHolder(view)
         }
 
@@ -44,10 +48,13 @@ class InfoActivity : AppCompatActivity() {
             return eventsList.size
         }
 
+        @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
         override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
+            val dr = EventDrawable(colorList[position % 2])
+            holder.view.background = dr
             holder.bind(eventsList[position])
             holder.view.setOnClickListener {
-                startActivity(Intent(this@InfoActivity, PunchActivity::class.java).putExtra(KEY_EVENT_ID, position+1))
+                startActivity(Intent(this@InfoActivity, PunchActivity::class.java).putExtra(KEY_EVENT_ID, position))
             }
         }
     }
