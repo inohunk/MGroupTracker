@@ -54,7 +54,7 @@ class InfoActivity : AppCompatActivity() {
             holder.view.background = dr
             holder.bind(eventsList[position])
             holder.view.setOnClickListener {
-                startActivity(Intent(this@InfoActivity, PunchActivity::class.java).putExtra(KEY_EVENT_ID, position))
+                startActivity(Intent(this@InfoActivity, PunchActivity::class.java).putExtra(KEY_EVENT_ID, eventsList[position].id))
             }
         }
     }
