@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
             val serviceIntent =
                 Intent(this, TrackingService::class.java)
             startService(serviceIntent)
-            bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_AUTO_CREATE)
+            bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
 
             updateUIWithCurrentState(true)
             mServiceBounded = true
