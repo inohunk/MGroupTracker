@@ -12,10 +12,13 @@ import android.os.IBinder
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
+import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.services.TrackingService
 import ru.hunkel.mgrouptracker.utils.enableBluetooth
 
@@ -38,9 +41,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        start_event_button.background = EventDrawable(ContextCompat.getColor(this,R.color.color_start_button))
+        stop_event_button.background = EventDrawable(ContextCompat.getColor(this,R.color.color_stop_button))
 
         start_event_button.setOnClickListener {
             startServiceOnClick()
@@ -60,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.settings_button -> startActivity(Intent(this, TrackingSettings::class.java))
-            R.id.info_button -> startActivity(Intent(this,InfoActivity::class.java))
+            R.id.info_button -> startActivity(Intent(this, InfoActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
     }
