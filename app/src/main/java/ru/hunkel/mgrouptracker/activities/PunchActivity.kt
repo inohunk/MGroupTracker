@@ -15,6 +15,7 @@ import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 import java.text.SimpleDateFormat
 import java.util.*
+import ru.hunkel.mgrouptracker.utils.PATTERN_HMS_DATE
 
 const val KEY_EVENT_ID = "keyEvent"
 
@@ -40,7 +41,9 @@ class PunchActivity : AppCompatActivity() {
         mPunchRecyclerView.adapter = PunchAdapter(punches)
     }
 
-    private class PunchAdapter(private val punchList: List<Punches>) : RecyclerView.Adapter<PunchViewHolder>() {
+    private inner class PunchAdapter(private val punchList: List<Punches>) : RecyclerView.Adapter<PunchViewHolder>() {
+        val colorList: IntArray = baseContext.resources.getIntArray(R.array.background_punch_item_colors)
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PunchViewHolder {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.punch_list_item, parent, false)
@@ -52,6 +55,7 @@ class PunchActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: PunchViewHolder, position: Int) {
+            holder.view.setBackgroundColor(colorList[position%2])
             holder.bind(punchList[position])
         }
     }
@@ -60,11 +64,11 @@ class PunchActivity : AppCompatActivity() {
         fun bind(punch: Punches) {
             if (eventStartTime != -1L) {
                 view.punch_id_text_view.text = "${punch.controlPoint}"
-                view.punch_time_text_view.text = "Время отметки: ${convertLongToTime(punch.time)}"
                 val format = SimpleDateFormat("HH:mm:ss")
                 format.timeZone = TimeZone.getTimeZone("UTC")
                 val diff = punch.time - eventStartTime
-                view.from_start_time_text_view.text = "Со старта: ${format.format(Date(diff))}"
+                view.punch_time_text_view.text = "${convertLongToTime(punch.time,PATTERN_HMS_DATE)}"
+                view.from_start_time_text_view.text = "${format.format(Date(diff))}"
             }
         }
     }

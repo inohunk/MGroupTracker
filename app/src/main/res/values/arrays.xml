@@ -13,4 +13,8 @@
         <item>#C8E6C9</item>
         <item>#B3E5FC</item>
     </array>
+    <array name="background_punch_item_colors">
+        <item>#FFFFFF</item>
+        <item>#DCEDC8</item>
+    </array>
 </resources>
