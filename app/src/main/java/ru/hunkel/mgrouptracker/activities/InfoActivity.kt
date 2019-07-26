@@ -7,7 +7,7 @@ import android.util.Log
 import android.view.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_info.*
 import kotlinx.android.synthetic.main.event_list_item.view.*
@@ -37,7 +37,7 @@ class InfoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_info)
         mEventRecyclerView = event_recycler_view
-        mEventRecyclerView.layoutManager = LinearLayoutManager(this)
+        mEventRecyclerView.layoutManager = GridLayoutManager(this, 1)
         mDatabaseManager = DatabaseManager(this)
 
         events = mDatabaseManager.actionGetAllEvents().toMutableList()
