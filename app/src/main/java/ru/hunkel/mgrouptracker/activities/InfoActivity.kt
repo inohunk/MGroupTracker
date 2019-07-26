@@ -24,7 +24,7 @@ class InfoActivity : AppCompatActivity() {
     /*
         VARIABLES
     */
-    private var events: List<Event> = arrayListOf()
+    private var events: MutableList<Event> = mutableListOf()
 
     private lateinit var mEventRecyclerView: RecyclerView
     private lateinit var mDatabaseManager: DatabaseManager
@@ -36,12 +36,11 @@ class InfoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_info)
-
         mEventRecyclerView = event_recycler_view
         mEventRecyclerView.layoutManager = LinearLayoutManager(this)
         mDatabaseManager = DatabaseManager(this)
 
-        events = mDatabaseManager.actionGetAllEvents()
+        events = mDatabaseManager.actionGetAllEvents().toMutableList()
         mEventRecyclerView.adapter = EventAdapter(events)
     }
 
@@ -56,11 +55,10 @@ class InfoActivity : AppCompatActivity() {
                             "start time: ${convertLongToTime(event.startTime)}\n\t" +
                             "end time: ${convertLongToTime(event.endTime)}\n"
                 )
+                events.removeAt(item.order)
                 mDatabaseManager.actionDeleteEvent(event)
-                mEventRecyclerView.removeViewAt(item.order)
                 mEventRecyclerView.adapter!!.notifyItemRemoved(item.order)
                 mEventRecyclerView.adapter!!.notifyItemRangeChanged(item.order, events.size)
-                mEventRecyclerView.adapter!!.notifyDataSetChanged()
             }
         }
         return true
