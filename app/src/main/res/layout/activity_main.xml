@@ -13,10 +13,12 @@
             android:gravity="center"
     >
         <Button
+                android:layout_margin="5dp"
                 android:text="Start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/start_event_button"/>
         <Button
+                android:layout_margin="5dp"
                 android:text="Stop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/stop_event_button"/>
