@@ -253,6 +253,7 @@ class TrackingService : Service(), BeaconConsumer {
                 mPunches.remove(punch)
                 mPunches.add(newPunch)
                 mDatabaseManager.actionAddPunch(newPunch)
+                createNotificationForControlPoint(cp)
             }
             true
         } else {
@@ -264,8 +265,8 @@ class TrackingService : Service(), BeaconConsumer {
             mPunchesIdentifiers.add(cp)
             mPunches.add(punch)
             mDatabaseManager.actionAddPunch(punch)
-            createNotificationForControlPoint(cp)
             Log.i(TAG, "added to list")
+            createNotificationForControlPoint(cp)
             false
         }
     }
