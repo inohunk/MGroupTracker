@@ -25,10 +25,7 @@ import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
-import ru.hunkel.mgrouptracker.utils.DEFAULT_CONTROL_POINT_UPDATE
-import ru.hunkel.mgrouptracker.utils.DEFAULT_LOCK_UPDATE_INTERVAL
-import ru.hunkel.mgrouptracker.utils.STATE_OFF
-import ru.hunkel.mgrouptracker.utils.STATE_ON
+import ru.hunkel.mgrouptracker.utils.*
 import ru.hunkel.servicesipc.ILocationService
 import java.util.*
 import kotlin.math.abs
@@ -50,6 +47,7 @@ class TrackingService : Service(), BeaconConsumer {
 
         private const val LOCK_UPDATE_INTERVAL: Long = DEFAULT_LOCK_UPDATE_INTERVAL
     }
+
     private var mWakeLock: PowerManager.WakeLock? = null
     private var mLastLockUpdateMillis: Long = 0
 
@@ -92,19 +90,27 @@ class TrackingService : Service(), BeaconConsumer {
             "ru.hunkel.servicesipc",
             "ru.hunkel.servicesipc.services.LocationService"
         )
-        val res = bindService(
-            serviceIntent,
-            locationServiceConnection,
-            Context.BIND_AUTO_CREATE
-        )
-        Log.i(TAG + "TEST", "Service started: $res")
+        try {
+            val res = bindService(
+                serviceIntent,
+                locationServiceConnection,
+                Context.BIND_WAIVE_PRIORITY
+            )
+            Log.i(TAG + "TEST", "Service started: $res")
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.message)
+        }
 
     }
 
     private fun stopLocationService() {
-        locationService!!.stopTracking()
-        unbindService(locationServiceConnection)
+        if (isServiceConnected) {
+            locationService!!.stopTracking()
+            unbindService(locationServiceConnection)
+            isServiceConnected = false
+        }
     }
+
     /*
         INNER CLASSES
     */
@@ -294,6 +300,8 @@ class TrackingService : Service(), BeaconConsumer {
                     time = System.currentTimeMillis(),
                     controlPoint = cp
                 )
+                val time = getTimeFromService(cp)
+
                 mPunches.remove(punch)
                 mPunches.add(newPunch)
                 mDatabaseManager.actionAddPunch(newPunch)
@@ -306,6 +314,8 @@ class TrackingService : Service(), BeaconConsumer {
                 time = System.currentTimeMillis(),
                 controlPoint = cp
             )
+            val time = getTimeFromService(cp)
+
             mPunchesIdentifiers.add(cp)
             mPunches.add(punch)
             mDatabaseManager.actionAddPunch(punch)
@@ -313,6 +323,17 @@ class TrackingService : Service(), BeaconConsumer {
             createNotificationForControlPoint(cp)
             false
         }
+    }
+
+    fun getTimeFromService(cp: Int): Long {
+        var time = -1L
+        if (isServiceConnected) {
+            time = locationService!!.punch(cp)
+            Log.i(TAG + "REMOTE", convertLongToTime(time))
+        } else {
+            time = System.currentTimeMillis()
+        }
+        return time
     }
 
     private fun findPunchByControlPoint(cp: Int): Punches {
