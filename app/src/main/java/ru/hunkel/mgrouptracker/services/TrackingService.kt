@@ -301,7 +301,7 @@ class TrackingService : Service(), BeaconConsumer {
                     controlPoint = cp
                 )
                 val time = getTimeFromService(cp)
-
+                punch.time = time
                 mPunches.remove(punch)
                 mPunches.add(newPunch)
                 mDatabaseManager.actionAddPunch(newPunch)
@@ -315,7 +315,7 @@ class TrackingService : Service(), BeaconConsumer {
                 controlPoint = cp
             )
             val time = getTimeFromService(cp)
-
+            punch.time = time
             mPunchesIdentifiers.add(cp)
             mPunches.add(punch)
             mDatabaseManager.actionAddPunch(punch)
@@ -325,7 +325,7 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
-    fun getTimeFromService(cp: Int): Long {
+    private fun getTimeFromService(cp: Int): Long {
         var time = -1L
         if (isServiceConnected) {
             time = locationService!!.punch(cp)

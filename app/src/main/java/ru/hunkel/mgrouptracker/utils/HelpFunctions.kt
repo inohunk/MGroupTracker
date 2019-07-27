@@ -3,7 +3,7 @@ package ru.hunkel.mgrouptracker.utils
 import java.text.SimpleDateFormat
 import java.util.*
 const val PATTERN_FULL_DATE = "yyyy.MM.dd HH:mm:ss"
-const val PATTERN_HMS_DATE = "hh:mm:ss"
+const val PATTERN_HMS_DATE = "HH:mm:ss"
 
 fun convertLongToTime(time: Long): String {
     val date = Date(time)
