@@ -27,15 +27,18 @@ interface TrackingDao {
     fun getLastEvent(): Event
 
     @Query("SELECT * FROM events ORDER BY ID ASC")
-    fun getAllEvents():List<Event>
+    fun getAllEvents(): List<Event>
 
     //Punches
     @Insert
     fun addPunch(punch: Punches)
 
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    fun replacePunch(punch: Punches)
+
     @Query("SELECT * FROM punches ORDER BY ID DESC LIMIT 1")
     fun getLastPunch(): Punches
 
     @Query("SELECT * FROM punches INNER JOIN events ON events.id = punches.event_id WHERE event_id = :id ORDER BY punches.time ASC")
-    fun getPunchesByEventId(id: Int):List<Punches>
+    fun getPunchesByEventId(id: Int): List<Punches>
 }

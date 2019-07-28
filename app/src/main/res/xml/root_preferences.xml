@@ -39,7 +39,14 @@
     <EditTextPreference
             app:key="beacon_update_interval"
             app:title="Обновить время КП после(секунды)"
-            app:defaultValue="10"
+            app:defaultValue="300"
             android:icon="@drawable/ic_search_period"
             app:useSimpleSummaryProvider="true"/>
+    <ListPreference
+            android:key="update_punch_params"
+            android:icon="@drawable/ic_baseline_find_replace_24px"
+            android:title="Параметры обновления метки"
+            android:entries="@array/update_parameters_titles"
+            android:defaultValue="0"
+            android:entryValues="@array/update_parameters_values"/>
 </androidx.preference.PreferenceScreen>

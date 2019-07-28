@@ -64,6 +64,8 @@ class TrackingService : Service(), BeaconConsumer {
     private val mPunchesIdentifiers = LinkedList<Int>()
     private val mPunches = LinkedList<Punches>()
 
+    private var mPunchUpdateState = PUNCH_UPDATE_STATE_ADD
+
     //LOCATION SERVICE
     var locationService: ILocationService? = null
     var isServiceConnected = false
@@ -237,6 +239,7 @@ class TrackingService : Service(), BeaconConsumer {
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
         val betweenScanPeriod = (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
+        mPunchUpdateState = (pm.getString("update_punch_params", "0")).toInt()
         updateControlPointAfter = (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
 
         mBeaconManager.foregroundScanPeriod = scanPeriod
@@ -293,7 +296,8 @@ class TrackingService : Service(), BeaconConsumer {
             Log.i(TAG, "already exists in list")
             val punch = findPunchByControlPoint(cp)
             val currentTime = System.currentTimeMillis()
-            if (currentTime - punch.time > updateControlPointAfter) {
+
+            if ((currentTime - punch.time > updateControlPointAfter) and (mPunchUpdateState != PUNCH_UPDATE_STATE_NOTHING)) {
                 Log.i(TAG, "TIME FOR CONTROL POINT NEED TO BE UPDATED")
                 val newPunch = Punches(
                     eventId = mDatabaseManager.actionGetLastEvent().id,
@@ -304,7 +308,10 @@ class TrackingService : Service(), BeaconConsumer {
                 punch.time = time
                 mPunches.remove(punch)
                 mPunches.add(newPunch)
-                mDatabaseManager.actionAddPunch(newPunch)
+                when (mPunchUpdateState) {
+                    PUNCH_UPDATE_STATE_ADD -> mDatabaseManager.actionAddPunch(newPunch)
+                    PUNCH_UPDATE_STATE_REPLACE -> mDatabaseManager.actionReplacePunch(newPunch)
+                }
                 createNotificationForControlPoint(cp)
             }
             true
