@@ -22,7 +22,6 @@ import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.services.TrackingService
 import ru.hunkel.mgrouptracker.utils.enableBluetooth
 
-
 class MainActivity : AppCompatActivity() {
 
     /*
@@ -66,7 +65,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
-            R.id.settings_button -> startActivity(Intent(this, TrackingSettings::class.java))
+            R.id.settings_button -> {
+                if (mServiceBounded.not()) {
+                    startActivity(Intent(this, TrackingSettings::class.java))
+                } else {
+                    Toast.makeText(this, "Нельзя открыть настройки во время соревнования.", Toast.LENGTH_SHORT).show()
+                }
+            }
             R.id.info_button -> startActivity(Intent(this, InfoActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
