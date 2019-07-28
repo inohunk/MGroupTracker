@@ -5,15 +5,27 @@
                 android:padding="5dp"
 >
     <TextView
+            android:id="@+id/punch_position_text_view"
+            android:text="100."
+            android:textSize="28sp"
+            android:layout_centerVertical="true"
+            android:gravity="right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_margin="5dp"
+    />
+    <TextView
             android:id="@+id/punch_id_text_view"
-            android:text="72"
+            android:text="116"
             android:textSize="32sp"
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAlignment="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
+            android:layout_toRightOf="@id/punch_position_text_view"
             android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:layout_margin="5dp"/>
@@ -29,23 +41,22 @@
     >
         <TextView
                 android:id="@+id/punch_time_text_view"
+                android:text="99:99:99"
                 android:textSize="20sp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
-                android:padding="5dp"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
                 android:textAlignment="center"
         />
         <TextView
                 android:id="@+id/from_start_time_text_view"
-                android:text="Время отметки"
+                android:text="99:99:99"
                 android:textSize="20sp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
-                android:padding="5dp"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
                 android:textAlignment="center"

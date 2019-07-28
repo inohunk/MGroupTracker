@@ -56,13 +56,14 @@ class PunchActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: PunchViewHolder, position: Int) {
             holder.view.setBackgroundColor(colorList[position%2])
-            holder.bind(punchList[position])
+            holder.bind(punchList[position],position)
         }
     }
 
     private class PunchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        fun bind(punch: Punches) {
+        fun bind(punch: Punches,position:Int) {
             if (eventStartTime != -1L) {
+                view.punch_position_text_view.text = "${position+1}."
                 view.punch_id_text_view.text = "${punch.controlPoint}"
                 val format = SimpleDateFormat("HH:mm:ss")
                 format.timeZone = TimeZone.getTimeZone("UTC")
