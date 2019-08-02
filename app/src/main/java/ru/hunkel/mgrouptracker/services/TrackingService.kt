@@ -133,6 +133,11 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    private inner class RemoveNotificationTask():TimerTask(){
+        override fun run() {
+            removeControlPointNotification()
+        }
+    }
     /*
         FUNCTIONS
     */
@@ -201,7 +206,9 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
-
+    private fun removeControlPointNotification(){
+        mNotificationManager.cancel(NOTIFICATION_CONTROL_POINT_ID)
+    }
     private fun getBitmap(context: Context, drawableId: Int): Bitmap {
         var drawable = ContextCompat.getDrawable(context, drawableId)!!
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -229,6 +236,7 @@ class TrackingService : Service(), BeaconConsumer {
 
         mNotificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
+        Timer().schedule(RemoveNotificationTask(),30000)
     }
 
     override fun onBeaconServiceConnect() {
