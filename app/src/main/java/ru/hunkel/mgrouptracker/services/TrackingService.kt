@@ -53,6 +53,7 @@ class TrackingService : Service(), BeaconConsumer {
 
     private lateinit var mBeaconManager: BeaconManager
     private var mBuilder: NotificationCompat.Builder? = null
+    private lateinit var mNotificationManager: NotificationManager
 
     private var mTrackingState = STATE_OFF
 
@@ -137,6 +138,7 @@ class TrackingService : Service(), BeaconConsumer {
     */
     override fun onCreate() {
         mDatabaseManager = DatabaseManager(this)
+        mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         checkBeaconSupport()
         initBeaconManager()
@@ -181,7 +183,6 @@ class TrackingService : Service(), BeaconConsumer {
         )
 
         mBuilder!!.setContentIntent(pendingIntent)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -189,14 +190,14 @@ class TrackingService : Service(), BeaconConsumer {
                 "Controls Notification", NotificationManager.IMPORTANCE_DEFAULT
             )
             channel.description = "Controls Notification Channel"
-            notificationManager.createNotificationChannel(channel)
+            mNotificationManager.createNotificationChannel(channel)
             mBuilder!!.setChannelId(channel.id)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             mBeaconManager.enableForegroundServiceScanning(mBuilder!!.build(), NOTIFICATION_STATE_ID)
         } else {
-            notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
+            mNotificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
         }
     }
 
@@ -225,9 +226,8 @@ class TrackingService : Service(), BeaconConsumer {
         mBuilder!!.setContentText("$controlPoint")
         mBuilder!!.setSound(Uri.parse("android.resource://ru.hunkel.mgrouptracker/" + R.raw.notification_sound))
         mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        notificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
+        mNotificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
     }
 
