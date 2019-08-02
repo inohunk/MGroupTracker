@@ -51,4 +51,10 @@
             android:entryValues="@array/update_parameters_values"
             app:useSimpleSummaryProvider="true"
     />
+    <EditTextPreference
+            app:key="punch_delete_time"
+            app:title="Удалять уведомление после (секунды)"
+            app:defaultValue="30"
+            android:icon="@drawable/ic_search_period"
+            app:useSimpleSummaryProvider="true"/>
 </androidx.preference.PreferenceScreen>

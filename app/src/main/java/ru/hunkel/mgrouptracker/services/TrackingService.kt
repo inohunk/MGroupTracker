@@ -54,6 +54,7 @@ class TrackingService : Service(), BeaconConsumer {
     private lateinit var mBeaconManager: BeaconManager
     private var mBuilder: NotificationCompat.Builder? = null
     private lateinit var mNotificationManager: NotificationManager
+    private var mDeleteNotificationAfter = DEFAULT_DELETE_NOTIFICATION_TIME
 
     private var mTrackingState = STATE_OFF
 
@@ -236,7 +237,7 @@ class TrackingService : Service(), BeaconConsumer {
 
         mNotificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
-        Timer().schedule(RemoveNotificationTask(),30000)
+        Timer().schedule(RemoveNotificationTask(),mDeleteNotificationAfter)
     }
 
     override fun onBeaconServiceConnect() {
@@ -247,8 +248,11 @@ class TrackingService : Service(), BeaconConsumer {
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
         val betweenScanPeriod = (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
+        val removeNotificationTime = (pm.getString("punch_delete_time", DEFAULT_DELETE_NOTIFICATION_TIME.toString())!!.toFloat() * 1000).toLong()
+
         mPunchUpdateState = (pm.getString("update_punch_params", "0")).toInt()
         updateControlPointAfter = (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
+        mDeleteNotificationAfter = removeNotificationTime
 
         mBeaconManager.foregroundScanPeriod = scanPeriod
         mBeaconManager.backgroundBetweenScanPeriod = betweenScanPeriod
