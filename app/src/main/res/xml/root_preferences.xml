@@ -48,5 +48,7 @@
             android:title="Параметры обновления метки"
             android:entries="@array/update_parameters_titles"
             android:defaultValue="0"
-            android:entryValues="@array/update_parameters_values"/>
+            android:entryValues="@array/update_parameters_values"
+            app:useSimpleSummaryProvider="true"
+    />
 </androidx.preference.PreferenceScreen>

@@ -1,5 +1,6 @@
 package ru.hunkel.mgrouptracker.database.dao
 
+import android.os.FileObserver.DELETE
 import androidx.room.*
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
@@ -34,7 +35,10 @@ interface TrackingDao {
     fun addPunch(punch: Punches)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun replacePunch(punch: Punches)
+    fun updatePunch(punch: Punches)
+
+    @Query("DELETE FROM punches WHERE control_point = :id")
+    fun deletePunchByControlPointId(id: Int)
 
     @Query("SELECT * FROM punches ORDER BY ID DESC LIMIT 1")
     fun getLastPunch(): Punches

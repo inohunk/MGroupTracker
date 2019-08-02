@@ -77,7 +77,8 @@ class DatabaseManager(context: Context) {
     }
 
     fun actionReplacePunch(punch: Punches) {
-        mDb.trackingModel().replacePunch(punch)
+        mDb.trackingModel().deletePunchByControlPointId(punch.controlPoint)
+        mDb.trackingModel().addPunch(punch)
         val lastPunch = mDb.trackingModel().getLastPunch()
         Log.i(
             TAG+"RRR", "" +
