@@ -67,8 +67,8 @@ class DatabaseManager(context: Context) {
         val lastPunch = mDb.trackingModel().getLastPunch()
 
         Log.i(
-            TAG, "" +
-                    "Adding punch:\n" +
+            TAG,
+            "\nAdding punch:\n" +
                     "id: ${lastPunch.id}\n" +
                     "event id: ${lastPunch.eventId}\n" +
                     "control point: ${lastPunch.controlPoint}\n" +
@@ -81,13 +81,17 @@ class DatabaseManager(context: Context) {
         mDb.trackingModel().addPunch(punch)
         val lastPunch = mDb.trackingModel().getLastPunch()
         Log.i(
-            TAG+"RRR", "" +
-                    "Replaced punch:\n" +
+            TAG,
+            "\nReplaced punch:\n" +
                     "id: ${lastPunch.id}\n" +
                     "event id: ${lastPunch.eventId}\n" +
                     "control point: ${lastPunch.controlPoint}\n" +
                     "time: ${convertLongToTime(lastPunch.time)}\n"
         )
+    }
+
+    fun actionGetLastPunch(): Punches {
+        return mDb.trackingModel().getLastPunch()
     }
 
     fun actionGetPunchesByEventId(id: Int): List<Punches> {
