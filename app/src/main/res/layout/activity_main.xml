@@ -5,11 +5,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".activities.MainActivity">
+    <include
+            layout="@layout/activity_punch"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_above="@id/event_view"
+    />
     <LinearLayout
             android:id="@+id/event_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="15dp"
             android:gravity="center"
     >
         <Button
