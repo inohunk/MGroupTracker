@@ -1,26 +1,33 @@
 package ru.hunkel.mgrouptracker.activities
 
 import android.Manifest
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Bundle
-import android.os.IBinder
-import android.view.Menu
-import android.view.MenuItem
+import android.os.*
+import android.util.Log
+import android.view.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_punch.*
+import kotlinx.android.synthetic.main.punch_list_item.view.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
+import ru.hunkel.mgrouptracker.database.entities.Punches
+import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.services.TrackingService
+import ru.hunkel.mgrouptracker.utils.PATTERN_HMS_DATE
+import ru.hunkel.mgrouptracker.utils.convertLongToTime
 import ru.hunkel.mgrouptracker.utils.enableBluetooth
+import java.text.SimpleDateFormat
+import java.util.*
+
+const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     */
     var mTrackingService: ITrackingService? = null
     var mServiceBounded = false
+    private lateinit var mPunchRecyclerView: RecyclerView
+
+    private lateinit var mBroadcastReceiver: BroadcastReceiver
 
     private val mTrackingServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -45,8 +55,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        start_event_button.background = EventDrawable(ContextCompat.getColor(this,R.color.color_start_button))
-        stop_event_button.background = EventDrawable(ContextCompat.getColor(this,R.color.color_stop_button))
+        start_event_button.background = EventDrawable(ContextCompat.getColor(this, R.color.color_start_button))
+        stop_event_button.background = EventDrawable(ContextCompat.getColor(this, R.color.color_stop_button))
 
         start_event_button.setOnClickListener {
             startServiceOnClick()
@@ -56,6 +66,26 @@ class MainActivity : AppCompatActivity() {
             stopServiceOnClick()
         }
         updateUIWithCurrentState(false)
+
+        mPunchRecyclerView = punch_recycler_view
+        mPunchRecyclerView.layoutManager = LinearLayoutManager(this)
+        val dbManager = DatabaseManager(this)
+
+        val eventId = intent.getIntExtra(KEY_EVENT_ID, 1)
+        PunchActivity.eventStartTime = dbManager.actionGetEventById(eventId).startTime
+        val punches = dbManager.actionGetPunchesByEventId(eventId)
+        mPunchRecyclerView.adapter = PunchAdapter(punches.toMutableList())
+
+        mBroadcastReceiver = object : BroadcastReceiver(){
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val punch = dbManager.actionGetLastPunch()
+                (mPunchRecyclerView.adapter!! as PunchAdapter).addItem(punch)
+                mPunchRecyclerView.adapter!!.notifyDataSetChanged()
+                Log.i("TTT","RECEIVED")
+            }
+        }
+
+        registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -95,6 +125,8 @@ class MainActivity : AppCompatActivity() {
 
             updateUIWithCurrentState(true)
             mServiceBounded = true
+            (mPunchRecyclerView.adapter as PunchAdapter).clear()
+
         }
     }
 
@@ -102,7 +134,6 @@ class MainActivity : AppCompatActivity() {
 
         unbindService(mTrackingServiceConnection)
         stopService(Intent(this, TrackingService::class.java))
-
         updateUIWithCurrentState(false)
         mServiceBounded = false
     }
@@ -118,6 +149,7 @@ class MainActivity : AppCompatActivity() {
         if (mServiceBounded) {
             unbindService(mTrackingServiceConnection)
         }
+        unregisterReceiver(mBroadcastReceiver)
     }
 
     private fun acceptPermissions(permissions: Array<String>): Boolean {
@@ -142,5 +174,52 @@ class MainActivity : AppCompatActivity() {
             grandted = true
         }
         return grandted
+    }
+
+    /*
+        INNER CLASSES
+    */
+    private inner class PunchAdapter(private val punchList: MutableList<Punches>) :
+        RecyclerView.Adapter<PunchViewHolder>() {
+        val colorList: IntArray = baseContext.resources.getIntArray(R.array.background_punch_item_colors)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PunchViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.punch_list_item, parent, false)
+            return PunchViewHolder(view)
+        }
+
+        override fun getItemCount(): Int {
+            return punchList.size
+        }
+
+        override fun onBindViewHolder(holder: PunchViewHolder, position: Int) {
+            holder.view.setBackgroundColor(colorList[position % 2])
+            holder.bind(punchList[position], position)
+        }
+
+        fun addItem(punch: Punches) {
+            punchList.add(punch)
+            mPunchRecyclerView.adapter!!.notifyDataSetChanged()
+        }
+
+        fun clear(){
+            punchList.clear()
+            mPunchRecyclerView.adapter!!.notifyDataSetChanged()
+        }
+    }
+
+    private class PunchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        fun bind(punch: Punches, position: Int) {
+            if (PunchActivity.eventStartTime != -1L) {
+                view.punch_position_text_view.text = "${position + 1}."
+                view.punch_id_text_view.text = "${punch.controlPoint}"
+                val format = SimpleDateFormat("HH:mm:ss")
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                val diff = punch.time - PunchActivity.eventStartTime
+                view.punch_time_text_view.text = "${convertLongToTime(punch.time, PATTERN_HMS_DATE)}"
+                view.from_start_time_text_view.text = "${format.format(Date(diff))}"
+            }
+        }
     }
 }
