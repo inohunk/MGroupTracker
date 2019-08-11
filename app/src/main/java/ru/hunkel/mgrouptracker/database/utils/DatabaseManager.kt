@@ -117,4 +117,8 @@ class DatabaseManager(context: Context) {
     fun actionGetEventById(id: Int): Event {
         return mDb.trackingModel().getEventById(id)
     }
+
+    fun actionGetPunchByControlPoint(cp:Int): Punches {
+        return mDb.trackingModel().getPunchByControlPoint(cp)
+    }
 }
