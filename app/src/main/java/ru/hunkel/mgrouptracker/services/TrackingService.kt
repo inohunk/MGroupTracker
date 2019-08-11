@@ -4,11 +4,17 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.IBinder
+import android.os.PowerManager
+import android.os.RemoteException
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -16,8 +22,8 @@ import androidx.core.graphics.drawable.DrawableCompat
 import org.altbeacon.beacon.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
-import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.activities.BROADCAST_ACTION
+import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.utils.*
@@ -302,18 +308,18 @@ class TrackingService : Service(), BeaconConsumer {
                 punch.time = time
                 mPunches.remove(punch)
                 mPunches.add(newPunch)
+
+                val broadcastIntent = Intent(BROADCAST_ACTION)
+
                 when (mPunchUpdateState) {
                     PUNCH_UPDATE_STATE_ADD -> {
                         mDatabaseManager.actionAddPunch(newPunch)
-                        val intent = Intent(BROADCAST_ACTION)
-                        sendBroadcast(intent)
                     }
                     PUNCH_UPDATE_STATE_REPLACE -> {
                         mDatabaseManager.actionReplacePunch(newPunch)
-                        val intent = Intent(BROADCAST_ACTION)
-                        sendBroadcast(intent)
                     }
                 }
+                sendBroadcast(broadcastIntent)
                 createNotificationForControlPoint(cp)
             }
             true

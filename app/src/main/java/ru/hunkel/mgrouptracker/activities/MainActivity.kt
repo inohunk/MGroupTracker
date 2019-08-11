@@ -3,7 +3,9 @@ package ru.hunkel.mgrouptracker.activities
 import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -28,6 +30,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
+const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +39,9 @@ class MainActivity : AppCompatActivity() {
     */
     var mTrackingService: ITrackingService? = null
     var mServiceBounded = false
+
+    lateinit var mDbManager: DatabaseManager
+
     private lateinit var mPunchRecyclerView: RecyclerView
 
     private lateinit var mBroadcastReceiver: BroadcastReceiver
@@ -69,19 +75,20 @@ class MainActivity : AppCompatActivity() {
 
         mPunchRecyclerView = punch_recycler_view
         mPunchRecyclerView.layoutManager = LinearLayoutManager(this)
-        val dbManager = DatabaseManager(this)
+        mDbManager = DatabaseManager(this)
 
         val eventId = intent.getIntExtra(KEY_EVENT_ID, 1)
-        PunchActivity.eventStartTime = dbManager.actionGetEventById(eventId).startTime
-        val punches = dbManager.actionGetPunchesByEventId(eventId)
+        PunchActivity.eventStartTime = mDbManager.actionGetEventById(eventId).startTime
+        val punches = mDbManager.actionGetPunchesByEventId(eventId)
         mPunchRecyclerView.adapter = PunchAdapter(punches.toMutableList())
 
-        mBroadcastReceiver = object : BroadcastReceiver(){
+        mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val punch = dbManager.actionGetLastPunch()
-                (mPunchRecyclerView.adapter!! as PunchAdapter).addItem(punch)
+                val list = mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
+                (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
                 mPunchRecyclerView.adapter!!.notifyDataSetChanged()
-                Log.i("TTT","RECEIVED")
+
+                Log.i("TTT", "RECEIVED")
             }
         }
 
@@ -200,10 +207,26 @@ class MainActivity : AppCompatActivity() {
 
         fun addItem(punch: Punches) {
             punchList.add(punch)
-            mPunchRecyclerView.adapter!!.notifyDataSetChanged()
+//            mPunchRecyclerView.adapter!!.notifyDataSetChanged()
+            notifyDataSetChanged()
         }
 
-        fun clear(){
+        fun replaceItem(punch: Punches) {
+            punchList.forEach {
+
+                if (punch.controlPoint == it.controlPoint) {
+                    it.time = punch.time
+                }
+            }
+            notifyDataSetChanged()
+        }
+
+        fun updateItems(items: List<Punches>) {
+            punchList.clear()
+            punchList.addAll(0, items)
+        }
+
+        fun clear() {
             punchList.clear()
             mPunchRecyclerView.adapter!!.notifyDataSetChanged()
         }
