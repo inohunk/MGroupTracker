@@ -31,6 +31,7 @@ import java.util.*
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
+const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         VARIABLES
     */
     var mTrackingService: ITrackingService? = null
-    var mServiceBounded = false
+    private var mServiceBounded = false
 
     lateinit var mDbManager: DatabaseManager
 
@@ -77,18 +78,16 @@ class MainActivity : AppCompatActivity() {
         mPunchRecyclerView.layoutManager = LinearLayoutManager(this)
         mDbManager = DatabaseManager(this)
 
-        val eventId = intent.getIntExtra(KEY_EVENT_ID, 1)
-        PunchActivity.eventStartTime = mDbManager.actionGetEventById(eventId).startTime
-        val punches = mDbManager.actionGetPunchesByEventId(eventId)
-        mPunchRecyclerView.adapter = PunchAdapter(punches.toMutableList())
+        try {
+            mPunchRecyclerView.adapter = PunchAdapter(mutableListOf())
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.message)
+        }
 
         mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val list = mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
-                mPunchRecyclerView.adapter!!.notifyDataSetChanged()
-
-                Log.i("TTT", "RECEIVED")
             }
         }
 
@@ -132,7 +131,11 @@ class MainActivity : AppCompatActivity() {
 
             updateUIWithCurrentState(true)
             mServiceBounded = true
-            (mPunchRecyclerView.adapter as PunchAdapter).clear()
+            try {
+                (mPunchRecyclerView.adapter as PunchAdapter).clear()
+            } catch (ex: Exception) {
+                Log.e(TAG, ex.message)
+            }
 
         }
     }
@@ -207,13 +210,11 @@ class MainActivity : AppCompatActivity() {
 
         fun addItem(punch: Punches) {
             punchList.add(punch)
-//            mPunchRecyclerView.adapter!!.notifyDataSetChanged()
             notifyDataSetChanged()
         }
 
         fun replaceItem(punch: Punches) {
             punchList.forEach {
-
                 if (punch.controlPoint == it.controlPoint) {
                     it.time = punch.time
                 }
@@ -224,6 +225,7 @@ class MainActivity : AppCompatActivity() {
         fun updateItems(items: List<Punches>) {
             punchList.clear()
             punchList.addAll(0, items)
+            notifyDataSetChanged()
         }
 
         fun clear() {
