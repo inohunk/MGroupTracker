@@ -236,17 +236,15 @@ class MainActivity : AppCompatActivity() {
 
     private inner class PunchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         fun bind(punch: Punches, position: Int) {
-            if (PunchActivity.eventStartTime != -1L) {
-                view.punch_position_text_view.text = "${position + 1}."
-                view.punch_id_text_view.text = "${punch.controlPoint}"
+            view.punch_position_text_view.text = "${position + 1}."
+            view.punch_id_text_view.text = "${punch.controlPoint}"
 
-                val eventStartTime = mDbManager.actionGetLastEvent().startTime
-                val format = SimpleDateFormat("HH:mm:ss")
-                format.timeZone = TimeZone.getTimeZone("UTC")
-                val diff = punch.time - eventStartTime
-                view.punch_time_text_view.text = "${convertLongToTime(punch.time, PATTERN_HMS_DATE)}"
-                view.from_start_time_text_view.text = "${format.format(Date(diff))}"
-            }
+            val eventStartTime = mDbManager.actionGetLastEvent().startTime
+            val format = SimpleDateFormat("HH:mm:ss")
+            format.timeZone = TimeZone.getTimeZone("UTC")
+            val diff = punch.time - eventStartTime
+            view.punch_time_text_view.text = "${convertLongToTime(punch.time, PATTERN_HMS_DATE)}"
+            view.from_start_time_text_view.text = "${format.format(Date(diff))}"
         }
     }
 }
