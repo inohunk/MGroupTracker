@@ -291,19 +291,20 @@ class TrackingService : Service(), BeaconConsumer {
 
     }
 
-    private fun checkInList(cp: Int): Boolean {
-        return if (mPunchesIdentifiers.contains(cp)) {
+    private fun checkInList(cp: Int) {
+        val newPunch = Punches(
+            eventId = mDatabaseManager.actionGetLastEvent().id,
+            time = System.currentTimeMillis(),
+            controlPoint = cp
+        )
+        if (mPunchesIdentifiers.contains(cp)) {
             Log.i(TAG, "already exists in list")
             val punch = findPunchByControlPoint(cp)
             val currentTime = System.currentTimeMillis()
 
             if ((currentTime - punch.time > updateControlPointAfter) and (mPunchUpdateState != PUNCH_UPDATE_STATE_NOTHING)) {
                 Log.i(TAG, "TIME FOR CONTROL POINT NEED TO BE UPDATED")
-                val newPunch = Punches(
-                    eventId = mDatabaseManager.actionGetLastEvent().id,
-                    time = System.currentTimeMillis(),
-                    controlPoint = cp
-                )
+
                 val time = getTimeFromService(cp)
                 punch.time = time
                 mPunches.remove(punch)
@@ -322,23 +323,16 @@ class TrackingService : Service(), BeaconConsumer {
                 sendBroadcast(broadcastIntent)
                 createNotificationForControlPoint(cp)
             }
-            true
         } else {
-            val punch = Punches(
-                eventId = mDatabaseManager.actionGetLastEvent().id,
-                time = System.currentTimeMillis(),
-                controlPoint = cp
-            )
             val time = getTimeFromService(cp)
-            punch.time = time
+            newPunch.time = time
             mPunchesIdentifiers.add(cp)
-            mPunches.add(punch)
-            mDatabaseManager.actionAddPunch(punch)
+            mPunches.add(newPunch)
+            mDatabaseManager.actionAddPunch(newPunch)
             val intent = Intent(BROADCAST_ACTION)
             sendBroadcast(intent)
-            Log.i(TAG, "added to list")
             createNotificationForControlPoint(cp)
-            false
+            Log.i(TAG, "added to list")
         }
     }
 
