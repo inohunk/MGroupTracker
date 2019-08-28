@@ -41,6 +41,9 @@ class InfoActivity : AppCompatActivity() {
         mDatabaseManager = DatabaseManager(this)
 
         events = mDatabaseManager.actionGetAllEvents().toMutableList()
+        events.sortByDescending {
+            it.id
+        }
         mEventRecyclerView.adapter = EventAdapter(events)
     }
 
