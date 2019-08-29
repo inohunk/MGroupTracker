@@ -59,9 +59,11 @@ class ScanFragment : Fragment() {
             val frame = Frame.Builder().setBitmap(imageBitmap).build()
             val barcodes = detector.detect(frame)
 
-            val thisCode = barcodes.valueAt(0)
-
-            Toast.makeText(context, thisCode.rawValue, Toast.LENGTH_SHORT).show()
+            try {
+                val thisCode = barcodes.valueAt(0)
+                Toast.makeText(context, thisCode.rawValue, Toast.LENGTH_SHORT).show()
+            } catch (ex: Exception) {
+            }
             findNavController().navigate(ScanFragmentDirections.actionGoToMainFragment())
         }
     }
