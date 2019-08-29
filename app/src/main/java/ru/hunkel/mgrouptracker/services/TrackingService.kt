@@ -161,8 +161,6 @@ class TrackingService : Service(), BeaconConsumer {
         mBeaconManager.setEnableScheduledScanJobs(false)
     }
 
-
-
     private fun createNotification() {
         mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         mBuilder!!.setSmallIcon(R.drawable.ic_main_icon)
