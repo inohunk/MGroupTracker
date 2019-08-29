@@ -9,15 +9,24 @@
         <action android:id="@+id/action_go_to_main_fragment" app:destination="@id/mainFragment"/>
     </fragment>
     <fragment android:id="@+id/mainFragment" android:name="ru.hunkel.mgrouptracker.fragments.MainFragment"
-              android:label="MainFragment">
+              android:label="MainFragment"
+                tools:layout="@layout/activity_main"
+    >
         <action android:id="@+id/action_go_to_events_fragment" app:destination="@id/eventsFragment"/>
+        <action android:id="@+id/action_go_to_settings" app:destination="@id/settingsActivity"/>
     </fragment>
     <fragment android:id="@+id/eventsFragment" android:name="ru.hunkel.mgrouptracker.fragments.EventsFragment"
-              android:label="EventsFragment">
+              android:label="EventsFragment"
+                tools:layout="@layout/activity_info"
+    >
         <action android:id="@+id/action_go_to_punch_fragment" app:destination="@id/punchFragment"/>
     </fragment>
     <fragment android:id="@+id/punchFragment" android:name="ru.hunkel.mgrouptracker.fragments.PunchFragment"
-              android:label="PunchFragment">
+              android:label="PunchFragment"
+            tools:layout="@layout/activity_punch"
+    >
         <argument android:name="argument_event_id" app:argType="integer" android:defaultValue="1"/>
     </fragment>
+    <activity android:id="@+id/settingsActivity" android:name="ru.hunkel.mgrouptracker.fragments.SettingsActivity"
+              android:label="SettingsActivity"/>
 </navigation>

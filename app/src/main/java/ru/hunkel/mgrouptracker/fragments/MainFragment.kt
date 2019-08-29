@@ -110,10 +110,11 @@ class MainFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item?.itemId) {
+        when (item.itemId) {
             R.id.settings_button -> {
                 if (mServiceBounded.not()) {
-                    startActivity(Intent(context, TrackingSettings::class.java))
+                    findNavController().navigate(MainFragmentDirections.actionGoToSettings())
+
                 } else {
                     Toast.makeText(context, "Нельзя открыть настройки во время соревнования.", Toast.LENGTH_SHORT)
                         .show()

@@ -1,12 +1,12 @@
-package ru.hunkel.mgrouptracker.activities
+package ru.hunkel.mgrouptracker.fragments
+
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceFragmentCompat
 import ru.hunkel.mgrouptracker.R
 
-class TrackingSettings : AppCompatActivity() {
-
+class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
@@ -25,4 +25,6 @@ class TrackingSettings : AppCompatActivity() {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
         }
     }
+
+
 }

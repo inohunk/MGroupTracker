@@ -22,7 +22,7 @@
             app:key="beacon_distance"
             app:title="Дистанция обнаружения(метры)"
             app:defaultValue="3"
-            android:icon="@drawable/ic_baseline_speaker_phone_24px"
+            android:icon="@drawable/ic_search_period"
             app:useSimpleSummaryProvider="true"/>
     <EditTextPreference
             app:key="beacon_scan_period"
@@ -44,7 +44,7 @@
             app:useSimpleSummaryProvider="true"/>
     <ListPreference
             android:key="update_punch_params"
-            android:icon="@drawable/ic_baseline_find_replace_24px"
+            android:icon="@drawable/ic_search_period"
             android:title="Параметры обновления метки"
             android:entries="@array/update_parameters_titles"
             android:defaultValue="0"

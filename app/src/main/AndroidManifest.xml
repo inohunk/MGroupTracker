@@ -15,39 +15,23 @@
             android:roundIcon="@drawable/ic_main_icon"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+
         <activity
                 android:name=".activities.HostActivity"
                 android:label="@string/title_activity_host"
-                android:theme="@style/AppTheme.NoActionBar">
+                android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activities.PunchActivity">
-        </activity>
-        <activity android:name=".activities.InfoActivity">
-        </activity>
-        <activity
-                android:name=".activities.TrackingSettings"
-                android:label="@string/title_activity_tracking_settings"
-                android:parentActivityName=".activities.MainActivity">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="ru.hunkel.mgrouptracker.activities.MainActivity"/>
-        </activity>
+        <activity android:name=".fragments.SettingsActivity"/>
 
         <service
                 android:name=".services.TrackingService"
                 android:enabled="true"
                 android:exported="true">
         </service>
-
-        <activity
-                android:name=".activities.MainActivity"
-                android:launchMode="singleInstance">
-        </activity>
     </application>
 
 </manifest>
