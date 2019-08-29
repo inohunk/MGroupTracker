@@ -21,7 +21,6 @@ import kotlinx.android.synthetic.main.activity_punch.*
 import kotlinx.android.synthetic.main.punch_list_item.view.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
-import ru.hunkel.mgrouptracker.activities.TrackingSettings
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
@@ -61,6 +60,11 @@ class MainFragment : Fragment() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mTrackingService = ITrackingService.Stub.asInterface(service)
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
