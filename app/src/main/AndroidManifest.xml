@@ -15,6 +15,16 @@
             android:roundIcon="@drawable/ic_main_icon"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity
+                android:name=".activities.HostActivity"
+                android:label="@string/title_activity_host"
+                android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <activity android:name=".activities.PunchActivity">
         </activity>
         <activity android:name=".activities.InfoActivity">
@@ -37,11 +47,6 @@
         <activity
                 android:name=".activities.MainActivity"
                 android:launchMode="singleInstance">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
     </application>
 

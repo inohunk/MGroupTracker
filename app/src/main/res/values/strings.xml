@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">MGroupTracker</string>
     <string name="title_activity_tracking_settings">Настройки</string>
+    <string name="title_activity_host">HostActivity</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
