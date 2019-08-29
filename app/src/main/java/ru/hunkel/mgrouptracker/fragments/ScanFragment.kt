@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.vision.Frame
 import com.google.android.gms.vision.barcode.Barcode
 import com.google.android.gms.vision.barcode.BarcodeDetector
@@ -61,6 +62,7 @@ class ScanFragment : Fragment() {
             val thisCode = barcodes.valueAt(0)
 
             Toast.makeText(context, thisCode.rawValue, Toast.LENGTH_SHORT).show()
+            findNavController().navigate(ScanFragmentDirections.actionGoToMainFragment())
         }
     }
 

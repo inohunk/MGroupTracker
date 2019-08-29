@@ -6,6 +6,9 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'kotlin-kapt'
 
+apply plugin: 'androidx.navigation.safeargs'
+
+
 ext {
     altbeacon_version = "2.16.2"
     navigation_host_version = "2.1.0-rc01"

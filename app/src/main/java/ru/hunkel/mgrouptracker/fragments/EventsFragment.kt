@@ -1,12 +1,13 @@
-package ru.hunkel.mgrouptracker.activities
+package ru.hunkel.mgrouptracker.fragments
 
-import android.content.Intent
+
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_info.*
@@ -19,8 +20,7 @@ import ru.hunkel.mgrouptracker.utils.convertLongToTime
 
 const val ACTION_DELETE = 0
 
-class InfoActivity : AppCompatActivity() {
-
+class EventsFragment : Fragment() {
     /*
         VARIABLES
     */
@@ -29,16 +29,22 @@ class InfoActivity : AppCompatActivity() {
     private lateinit var mEventRecyclerView: RecyclerView
     private lateinit var mDatabaseManager: DatabaseManager
 
-    /*
-        FUNCTIONS
-    */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_info)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.activity_info, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         mEventRecyclerView = event_recycler_view
-        mEventRecyclerView.layoutManager = GridLayoutManager(this, 1)
-        mDatabaseManager = DatabaseManager(this)
+        mEventRecyclerView.layoutManager = GridLayoutManager(context!!, 1)
+        mDatabaseManager = DatabaseManager(context!!)
 
         events = mDatabaseManager.actionGetAllEvents().toMutableList()
         events.sortByDescending {
@@ -47,7 +53,7 @@ class InfoActivity : AppCompatActivity() {
         mEventRecyclerView.adapter = EventAdapter(events)
     }
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
+    override fun onContextItemSelected(item: MenuItem): Boolean {
         when (item!!.itemId) {
             ACTION_DELETE -> {
                 val event = events[item.order]
@@ -72,7 +78,7 @@ class InfoActivity : AppCompatActivity() {
         INNER CLASSES
     */
     private inner class EventAdapter(private val eventsList: List<Event>) : RecyclerView.Adapter<EventViewHolder>() {
-        val colorList: IntArray = baseContext.resources.getIntArray(R.array.background_item_colors)
+        val colorList: IntArray = context!!.resources.getIntArray(R.array.background_item_colors)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
             val view = LayoutInflater.from(parent.context)
@@ -90,12 +96,9 @@ class InfoActivity : AppCompatActivity() {
             holder.view.background = dr
             holder.bind(eventsList[position])
             holder.view.setOnClickListener {
-                startActivity(
-                    Intent(this@InfoActivity, PunchActivity::class.java).putExtra(
-                        KEY_EVENT_ID,
-                        eventsList[position].id
-                    )
-                )
+                val action = EventsFragmentDirections.actionGoToPunchFragment()
+                action.argumentEventId = eventsList[position].id
+                findNavController().navigate(action)
             }
         }
     }

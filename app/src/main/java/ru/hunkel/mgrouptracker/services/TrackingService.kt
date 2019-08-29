@@ -24,10 +24,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
-import ru.hunkel.mgrouptracker.activities.BROADCAST_ACTION
-import ru.hunkel.mgrouptracker.activities.MainActivity
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
+import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
+import ru.hunkel.mgrouptracker.fragments.MainFragment
 import ru.hunkel.mgrouptracker.utils.*
 import ru.hunkel.servicesipc.ILocationService
 import java.util.*
@@ -165,7 +165,7 @@ class TrackingService : Service(), BeaconConsumer {
         mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         mBuilder!!.setSmallIcon(R.drawable.ic_main_icon)
         mBuilder!!.setContentTitle("Соревнование идет!")
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MainFragment::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
         )

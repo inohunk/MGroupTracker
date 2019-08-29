@@ -5,5 +5,19 @@
             app:startDestination="@id/scanFragment">
 
     <fragment android:id="@+id/scanFragment" android:name="ru.hunkel.mgrouptracker.fragments.ScanFragment"
-              android:label="fragment_scan" tools:layout="@layout/fragment_scan"/>
+              android:label="fragment_scan" tools:layout="@layout/fragment_scan">
+        <action android:id="@+id/action_go_to_main_fragment" app:destination="@id/mainFragment"/>
+    </fragment>
+    <fragment android:id="@+id/mainFragment" android:name="ru.hunkel.mgrouptracker.fragments.MainFragment"
+              android:label="MainFragment">
+        <action android:id="@+id/action_go_to_events_fragment" app:destination="@id/eventsFragment"/>
+    </fragment>
+    <fragment android:id="@+id/eventsFragment" android:name="ru.hunkel.mgrouptracker.fragments.EventsFragment"
+              android:label="EventsFragment">
+        <action android:id="@+id/action_go_to_punch_fragment" app:destination="@id/punchFragment"/>
+    </fragment>
+    <fragment android:id="@+id/punchFragment" android:name="ru.hunkel.mgrouptracker.fragments.PunchFragment"
+              android:label="PunchFragment">
+        <argument android:name="argument_event_id" app:argType="integer" android:defaultValue="1"/>
+    </fragment>
 </navigation>

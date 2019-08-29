@@ -1,4 +1,5 @@
-package ru.hunkel.mgrouptracker.activities
+package ru.hunkel.mgrouptracker.fragments
+
 
 import android.Manifest
 import android.content.*
@@ -10,8 +11,9 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -19,6 +21,7 @@ import kotlinx.android.synthetic.main.activity_punch.*
 import kotlinx.android.synthetic.main.punch_list_item.view.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
+import ru.hunkel.mgrouptracker.activities.TrackingSettings
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
@@ -31,13 +34,16 @@ import java.util.*
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
-const val TAG = "MainActivity"
+const val TAG = "MainFragment"
 
-class MainActivity : AppCompatActivity() {
-
+/**
+ * A simple [Fragment] subclass.
+ *
+ */
+class MainFragment : Fragment() {
     /*
-        VARIABLES
-    */
+            VARIABLES
+        */
     var mTrackingService: ITrackingService? = null
     private var mServiceBounded = false
 
@@ -57,13 +63,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.activity_main, container, false)
+    }
 
-        start_event_button.background = EventDrawable(ContextCompat.getColor(this, R.color.color_start_button))
-        stop_event_button.background = EventDrawable(ContextCompat.getColor(this, R.color.color_stop_button))
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        start_event_button.background = EventDrawable(ContextCompat.getColor(context!!, R.color.color_start_button))
+        stop_event_button.background = EventDrawable(ContextCompat.getColor(context!!, R.color.color_stop_button))
 
         start_event_button.setOnClickListener {
             startServiceOnClick()
@@ -75,8 +85,8 @@ class MainActivity : AppCompatActivity() {
         updateUIWithCurrentState(false)
 
         mPunchRecyclerView = punch_recycler_view
-        mPunchRecyclerView.layoutManager = LinearLayoutManager(this)
-        mDbManager = DatabaseManager(this)
+        mPunchRecyclerView.layoutManager = LinearLayoutManager(context)
+        mDbManager = DatabaseManager(context!!)
 
         try {
             mPunchRecyclerView.adapter = PunchAdapter(mutableListOf())
@@ -91,24 +101,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
+        context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.overflow_menu, menu)
-        return super.onCreateOptionsMenu(menu)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.overflow_menu, menu)
+        return super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item?.itemId) {
             R.id.settings_button -> {
                 if (mServiceBounded.not()) {
-                    startActivity(Intent(this, TrackingSettings::class.java))
+                    startActivity(Intent(context, TrackingSettings::class.java))
                 } else {
-                    Toast.makeText(this, "Нельзя открыть настройки во время соревнования.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Нельзя открыть настройки во время соревнования.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
-            R.id.info_button -> startActivity(Intent(this, InfoActivity::class.java))
+            R.id.info_button -> {
+                findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -125,9 +138,9 @@ class MainActivity : AppCompatActivity() {
             enableBluetooth()
 
             val serviceIntent =
-                Intent(this, TrackingService::class.java)
-            startService(serviceIntent)
-            bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
+                Intent(context, TrackingService::class.java)
+            context!!.startService(serviceIntent)
+            context!!.bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
 
             updateUIWithCurrentState(true)
             mServiceBounded = true
@@ -142,8 +155,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopServiceOnClick() {
 
-        unbindService(mTrackingServiceConnection)
-        stopService(Intent(this, TrackingService::class.java))
+        context!!.unbindService(mTrackingServiceConnection)
+        context!!.stopService(Intent(context, TrackingService::class.java))
         updateUIWithCurrentState(false)
         mServiceBounded = false
     }
@@ -153,13 +166,12 @@ class MainActivity : AppCompatActivity() {
         stop_event_button.isEnabled = state
     }
 
-    override fun onBackPressed() {}
     override fun onDestroy() {
         super.onDestroy()
         if (mServiceBounded) {
-            unbindService(mTrackingServiceConnection)
+            context!!.unbindService(mTrackingServiceConnection)
         }
-        unregisterReceiver(mBroadcastReceiver)
+        context!!.unregisterReceiver(mBroadcastReceiver)
     }
 
     private fun acceptPermissions(permissions: Array<String>): Boolean {
@@ -167,12 +179,12 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (permission in permissions) {
                 if (
-                    (checkSelfPermission((permission)) != PackageManager.PERMISSION_GRANTED)
+                    (context!!.checkSelfPermission((permission)) != PackageManager.PERMISSION_GRANTED)
                     and
                     (shouldShowRequestPermissionRationale(permission))
                 ) {
                     Toast.makeText(
-                        this,
+                        context,
                         "Разрешение на местоположение необходимо для записи ваших треков",
                         Toast.LENGTH_LONG
                     ).show()
@@ -191,7 +203,7 @@ class MainActivity : AppCompatActivity() {
     */
     private inner class PunchAdapter(private val punchList: MutableList<Punches>) :
         RecyclerView.Adapter<PunchViewHolder>() {
-        val colorList: IntArray = baseContext.resources.getIntArray(R.array.background_punch_item_colors)
+        val colorList: IntArray = context!!.resources.getIntArray(R.array.background_punch_item_colors)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PunchViewHolder {
             val view = LayoutInflater.from(parent.context)
