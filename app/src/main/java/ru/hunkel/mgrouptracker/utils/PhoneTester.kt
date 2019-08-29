@@ -8,7 +8,7 @@ class PhoneTester(val context: Context) {
     private val TAG = "PhoneTester"
 
     fun testDevice(): Boolean {
-        return (checkBeaconSupport() or checkBattery())
+        return (checkBeaconSupport() or checkBattery() or checkTime())
     }
 
     private fun checkBattery(): Boolean {
@@ -37,5 +37,9 @@ class PhoneTester(val context: Context) {
             }
             else -> false
         }
+    }
+
+    private fun checkTime():Boolean{
+        return true
     }
 }
