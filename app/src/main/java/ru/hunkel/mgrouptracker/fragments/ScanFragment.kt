@@ -18,10 +18,6 @@ import com.google.android.gms.vision.barcode.BarcodeDetector
 import kotlinx.android.synthetic.main.fragment_scan.view.*
 import ru.hunkel.mgrouptracker.R
 
-/**
- * A simple [Fragment] subclass.
- *
- */
 class ScanFragment : Fragment() {
     lateinit var detector: BarcodeDetector
 

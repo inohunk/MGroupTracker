@@ -35,10 +35,6 @@ const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 const val TAG = "MainFragment"
 
-/**
- * A simple [Fragment] subclass.
- *
- */
 class MainFragment : Fragment() {
     /*
             VARIABLES

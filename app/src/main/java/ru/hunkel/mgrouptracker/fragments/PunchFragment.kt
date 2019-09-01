@@ -19,12 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-const val KEY_EVENT_ID = "keyEvent"
-
-/**
- * A simple [Fragment] subclass.
- *
- */
 class PunchFragment : Fragment() {
     private lateinit var mPunchRecyclerView: RecyclerView
 
