@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_graph"
-            app:startDestination="@id/scanFragment">
+            app:startDestination="@id/mainFragment">
 
     <fragment android:id="@+id/scanFragment" android:name="ru.hunkel.mgrouptracker.fragments.ScanFragment"
               android:label="fragment_scan" tools:layout="@layout/fragment_scan">
@@ -13,7 +13,7 @@
                 tools:layout="@layout/activity_main"
     >
         <action android:id="@+id/action_go_to_events_fragment" app:destination="@id/eventsFragment"/>
-        <action android:id="@+id/action_go_to_settings" app:destination="@id/settingsActivity"/>
+        <action android:id="@+id/action_go_to_settings" app:destination="@+id/settingsFragment"/>
     </fragment>
     <fragment android:id="@+id/eventsFragment" android:name="ru.hunkel.mgrouptracker.fragments.EventsFragment"
               android:label="EventsFragment"
@@ -29,4 +29,8 @@
     </fragment>
     <activity android:id="@+id/settingsActivity" android:name="ru.hunkel.mgrouptracker.fragments.SettingsActivity"
               android:label="SettingsActivity"/>
+    <fragment android:id="@+id/settingsFragment" android:name="ru.hunkel.mgrouptracker.fragments.SettingsFragment"
+              android:label="SettingsFragment"
+                tools:layout="@layout/settings_activity"
+    />
 </navigation>
