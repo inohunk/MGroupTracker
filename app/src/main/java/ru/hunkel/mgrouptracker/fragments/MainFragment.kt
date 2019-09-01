@@ -2,6 +2,9 @@ package ru.hunkel.mgrouptracker.fragments
 
 
 import android.Manifest
+import android.app.Activity.RESULT_CANCELED
+import android.app.Activity.RESULT_OK
+import android.bluetooth.BluetoothAdapter
 import android.content.*
 import android.content.pm.PackageManager
 import android.os.Build
@@ -27,13 +30,14 @@ import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.services.TrackingService
 import ru.hunkel.mgrouptracker.utils.PATTERN_HMS_DATE
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
-import ru.hunkel.mgrouptracker.utils.enableBluetooth
 import java.text.SimpleDateFormat
 import java.util.*
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 const val TAG = "MainFragment"
+
+const val REQUEST_BLUETOOTH = 1
 
 class MainFragment : Fragment() {
     /*
@@ -136,21 +140,15 @@ class MainFragment : Fragment() {
                 )
             )
         ) {
-            enableBluetooth()
 
-            val serviceIntent =
-                Intent(context, TrackingService::class.java)
-            context!!.startService(serviceIntent)
-            context!!.bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
+            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-            updateUIWithCurrentState(true)
-            mServiceBounded = true
-            try {
-                (mPunchRecyclerView.adapter as PunchAdapter).clear()
-            } catch (ex: Exception) {
-                Log.e(TAG, ex.message)
+            if (mBluetoothAdapter.isEnabled) {
+                startTracking()
+            } else {
+                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(intent, REQUEST_BLUETOOTH)
             }
-
         }
     }
 
@@ -197,6 +195,39 @@ class MainFragment : Fragment() {
             grandted = true
         }
         return grandted
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if (requestCode == REQUEST_BLUETOOTH) {
+            when (resultCode) {
+                RESULT_OK -> {
+                    startTracking()
+                }
+                RESULT_CANCELED -> {
+                    Toast.makeText(
+                        context,
+                        "Включите блютуз, чтобы можно было начать поиск маячков",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun startTracking() {
+        val serviceIntent =
+            Intent(context, TrackingService::class.java)
+        context!!.startService(serviceIntent)
+        context!!.bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
+
+        updateUIWithCurrentState(true)
+        mServiceBounded = true
+        try {
+            (mPunchRecyclerView.adapter as PunchAdapter).clear()
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.message)
+        }
     }
 
     /*
