@@ -43,8 +43,11 @@ class MainFragment : Fragment() {
     /*
             VARIABLES
         */
+    companion object {
+        var mServiceBounded = false
+    }
+
     var mTrackingService: ITrackingService? = null
-    private var mServiceBounded = false
 
     lateinit var mDbManager: DatabaseManager
 
