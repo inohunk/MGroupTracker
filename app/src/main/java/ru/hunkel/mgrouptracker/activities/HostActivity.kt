@@ -20,11 +20,7 @@ class HostActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment)!!.childFragmentManager.fragments[0]
 
         if (fragment is MainFragment) {
-            if (MainFragment.mServiceBounded) {
-
-            } else {
-
-                Toast.makeText(this, "Для выхода нажмите еще раз", Toast.LENGTH_SHORT).show()
+            if (!MainFragment.mServiceBounded) {
                 cBackButtonPressed++
                 if (cBackButtonPressed == 2) {
                     super.onBackPressed()
@@ -34,6 +30,7 @@ class HostActivity : AppCompatActivity() {
                             cBackButtonPressed = 0
                         }
                     }, 3000)
+                    Toast.makeText(this, "Для выхода нажмите еще раз", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
