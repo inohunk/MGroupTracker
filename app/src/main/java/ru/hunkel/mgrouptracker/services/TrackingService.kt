@@ -89,6 +89,8 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    private lateinit var mTimeManager: TimeManager
+
     private fun startLocationService() {
         val serviceIntent = Intent()
         serviceIntent.component = ComponentName(
@@ -143,6 +145,7 @@ class TrackingService : Service(), BeaconConsumer {
         initBeaconManager()
         startOnClick()
         startLocationService()
+        mTimeManager = TimeManager(this)
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -239,7 +242,7 @@ class TrackingService : Service(), BeaconConsumer {
         mBeaconManager.applySettings()
 
         Log.i(TAG + "DISTANCE", distance.toString())
-        mBeaconManager.addRangeNotifier { beacons, region ->
+        mBeaconManager.addRangeNotifier { beacons, _ ->
 
             updateWakeLock()
             if (beacons.isNotEmpty()) {
@@ -284,13 +287,13 @@ class TrackingService : Service(), BeaconConsumer {
     private fun checkInList(cp: Int) {
         val newPunch = Punches(
             eventId = mDatabaseManager.actionGetLastEvent().id,
-            time = System.currentTimeMillis(),
+            time = mTimeManager.getTime(),
             controlPoint = cp
         )
         if (mPunchesIdentifiers.contains(cp)) {
             Log.i(TAG, "already exists in list")
             val punch = findPunchByControlPoint(cp)
-            val currentTime = System.currentTimeMillis()
+            val currentTime = mTimeManager.getTime()
 
             if ((currentTime - punch.time > updateControlPointAfter) and (mPunchUpdateState != PUNCH_UPDATE_STATE_NOTHING)) {
                 Log.i(TAG, "TIME FOR CONTROL POINT NEED TO BE UPDATED")
@@ -366,7 +369,7 @@ class TrackingService : Service(), BeaconConsumer {
             time = locationService!!.punch(cp)
             Log.i(TAG + "REMOTE", convertLongToTime(time))
         } else {
-            time = System.currentTimeMillis()
+            time = mTimeManager.getTime()
         }
         return time
     }
