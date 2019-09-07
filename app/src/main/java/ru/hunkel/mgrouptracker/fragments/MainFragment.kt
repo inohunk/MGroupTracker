@@ -55,6 +55,8 @@ class MainFragment : Fragment() {
 
     private lateinit var mBroadcastReceiver: BroadcastReceiver
 
+    private var mGpsPermissionAccepted = false
+
     private val mTrackingServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
 
@@ -141,24 +143,11 @@ class MainFragment : Fragment() {
     }
 
     private fun startServiceOnClick() {
-        if (acceptPermissions(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN
-                )
-            )
-        ) {
-
-            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
-            if (mBluetoothAdapter.isEnabled) {
-                startTracking()
-            } else {
-                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                startActivityForResult(intent, REQUEST_BLUETOOTH)
-            }
-        }
+        acceptPermissions(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ), 1
+        )
     }
 
     private fun stopServiceOnClick() {
@@ -182,28 +171,52 @@ class MainFragment : Fragment() {
         context!!.unregisterReceiver(mBroadcastReceiver)
     }
 
-    private fun acceptPermissions(permissions: Array<String>): Boolean {
-        var grandted = true
+    private fun acceptPermissions(permissions: Array<String>, requestCode: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (permission in permissions) {
-                if (
-                    (context!!.checkSelfPermission((permission)) != PackageManager.PERMISSION_GRANTED)
-                    and
-                    (shouldShowRequestPermissionRationale(permission))
-                ) {
-                    Toast.makeText(
-                        context,
-                        "Разрешение на местоположение необходимо для записи ваших треков",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    grandted = false
+                if (ContextCompat.checkSelfPermission(context!!, permission) != PackageManager.PERMISSION_GRANTED) {
+                    if ((shouldShowRequestPermissionRationale(permission))) {
+                        Toast.makeText(
+                            context,
+                            "Разрешение на местоположение необходимо для записи ваших треков",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        requestPermissions(permissions, requestCode)
+                    } else {
+//                        ActivityCompat.requestPermissions(activity!!, permissions, requestCode)
+                        requestPermissions(permissions, requestCode)
+                    }
+                } else {
+                    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+                    if (mBluetoothAdapter.isEnabled && mGpsPermissionAccepted) {
+                        startTracking()
+                    } else {
+                        val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        startActivityForResult(intent, REQUEST_BLUETOOTH)
+                    }
                 }
             }
-            requestPermissions(permissions, 1)
-        } else {
-            grandted = true
         }
-        return grandted
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            1 -> {
+                if (permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION)
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        mGpsPermissionAccepted = true
+                        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+                        if (mBluetoothAdapter.isEnabled && mGpsPermissionAccepted) {
+                            startTracking()
+                        } else {
+                            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                            startActivityForResult(intent, REQUEST_BLUETOOTH)
+                        }
+                    }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -211,7 +224,9 @@ class MainFragment : Fragment() {
         if (requestCode == REQUEST_BLUETOOTH) {
             when (resultCode) {
                 RESULT_OK -> {
-                    startTracking()
+                    if (mGpsPermissionAccepted) {
+                        startTracking()
+                    }
                 }
                 RESULT_CANCELED -> {
                     Toast.makeText(
