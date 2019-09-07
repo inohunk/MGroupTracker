@@ -189,7 +189,7 @@ class MainFragment : Fragment() {
                 } else {
                     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-                    if (mBluetoothAdapter.isEnabled && mGpsPermissionAccepted) {
+                    if (mBluetoothAdapter.isEnabled) {
                         startTracking()
                     } else {
                         val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
