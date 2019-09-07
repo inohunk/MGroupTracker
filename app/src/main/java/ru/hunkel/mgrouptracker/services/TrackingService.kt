@@ -89,7 +89,13 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
-    private lateinit var mTimeManager: TimeManager
+    private lateinit var mTimeManager: TimeManagerNew
+
+    private inner class TimeManagerNew(context: Context) : TimeManager(context) {
+        override fun onGpsTimeReceived() {
+            fixTimeInDatabase(mTimeManager.getTime())
+        }
+    }
 
     private fun startLocationService() {
         val serviceIntent = Intent()
@@ -128,7 +134,7 @@ class TrackingService : Service(), BeaconConsumer {
         }
 
         override fun stopEvent() {
-            mDatabaseManager.actionStopEvent()
+            mDatabaseManager.actionStopEvent(mTimeManager.getTime())
             stopOnClick()
         }
 
@@ -145,7 +151,7 @@ class TrackingService : Service(), BeaconConsumer {
         initBeaconManager()
         startOnClick()
         startLocationService()
-        mTimeManager = TimeManager(this)
+        mTimeManager = TimeManagerNew(this)
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -401,7 +407,7 @@ class TrackingService : Service(), BeaconConsumer {
             mBeaconManager.unbind(this)
 
         updateWakeLock()
-        mDatabaseManager.actionStopEvent()
+        mDatabaseManager.actionStopEvent(mTimeManager.getTime())
         mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
         mTrackingState = STATE_OFF
 
@@ -431,6 +437,24 @@ class TrackingService : Service(), BeaconConsumer {
                 this.mWakeLock = null
             }
             Log.i(TAG + "WAKELOCK", "RELEASED")
+        }
+    }
+
+    private fun fixTimeInDatabase(time: Long) {
+        val punchList = mDatabaseManager.actionGetPunchesBeforeCertainTime(time)
+        val event = mDatabaseManager.actionGetLastEvent()
+        event.startTime += mTimeManager.getTimeDifference()
+        mDatabaseManager.actionUpdateEvent(event)
+
+        for (p in punchList) {
+            Log.i(TAG, "PUNCH-TIME-SERVICE -------------------------")
+            Log.i(TAG, "PUNCH-TIME-SERVICE ${p.time}")
+            p.time += mTimeManager.getTimeDifference()
+            Log.i(TAG, "PUNCH-TIME-SERVICE ${p.time}")
+            mDatabaseManager.actionReplacePunchNew(p)
+
+            val broadcastIntent = Intent(BROADCAST_ACTION)
+            sendBroadcast(broadcastIntent)
         }
     }
 }

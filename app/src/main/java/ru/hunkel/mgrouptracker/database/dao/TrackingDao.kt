@@ -1,6 +1,5 @@
 package ru.hunkel.mgrouptracker.database.dao
 
-import android.os.FileObserver.DELETE
 import androidx.room.*
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
@@ -47,5 +46,8 @@ interface TrackingDao {
     fun getPunchesByEventId(id: Int): List<Punches>
 
     @Query("SELECT * FROM punches WHERE control_point = :cp")
-    fun getPunchByControlPoint(cp: Int):Punches
+    fun getPunchByControlPoint(cp: Int): Punches
+
+    @Query("SELECT * FROM punches WHERE time < :time")
+    fun getPunchesBeforeCertainTime(time: Long): List<Punches>
 }

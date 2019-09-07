@@ -121,4 +121,8 @@ class DatabaseManager(context: Context) {
     fun actionGetPunchByControlPoint(cp:Int): Punches {
         return mDb.trackingModel().getPunchByControlPoint(cp)
     }
+
+    fun actionGetPunchesBeforeCertainTime(time: Long): List<Punches> {
+        return mDb.trackingModel().getPunchesBeforeCertainTime(time)
+    }
 }
