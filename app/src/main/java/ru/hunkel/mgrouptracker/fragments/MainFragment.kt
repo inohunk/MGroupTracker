@@ -128,7 +128,13 @@ class MainFragment : Fragment() {
                 }
             }
             R.id.info_button -> {
-                findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
+                if (mServiceBounded.not()) {
+                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
+
+                } else {
+                    Toast.makeText(context, "Нельзя открыть во время соревнования.", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
         }
         return super.onOptionsItemSelected(item)
