@@ -30,9 +30,13 @@ class DatabaseManager(context: Context) {
         mDb.trackingModel().addEvent(mCurrentEvent)
     }
 
-    fun actionStopEvent() {
+    fun actionUpdateEvent(event: Event) {
+        mDb.trackingModel().updateEvent(event)
+    }
+
+    fun actionStopEvent(time: Long) {
         val event = mDb.trackingModel().getLastEvent()
-        event.endTime = System.currentTimeMillis()
+        event.endTime = time
         mDb.trackingModel().updateEvent(event)
         Log.i(TAG, "event stopped")
         actionGetLastEvent()
