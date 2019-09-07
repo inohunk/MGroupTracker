@@ -90,6 +90,10 @@ class DatabaseManager(context: Context) {
         )
     }
 
+    fun actionReplacePunchSimple(punch: Punches) {
+        mDb.trackingModel().updatePunch(punch)
+    }
+
     fun actionGetLastPunch(): Punches {
         return mDb.trackingModel().getLastPunch()
     }
@@ -118,7 +122,7 @@ class DatabaseManager(context: Context) {
         return mDb.trackingModel().getEventById(id)
     }
 
-    fun actionGetPunchByControlPoint(cp:Int): Punches {
+    fun actionGetPunchByControlPoint(cp: Int): Punches {
         return mDb.trackingModel().getPunchByControlPoint(cp)
     }
 

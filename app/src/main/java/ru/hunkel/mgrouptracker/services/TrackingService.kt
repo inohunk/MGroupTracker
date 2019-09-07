@@ -451,7 +451,7 @@ class TrackingService : Service(), BeaconConsumer {
             Log.i(TAG, "PUNCH-TIME-SERVICE ${p.time}")
             p.time += mTimeManager.getTimeDifference()
             Log.i(TAG, "PUNCH-TIME-SERVICE ${p.time}")
-            mDatabaseManager.actionReplacePunchNew(p)
+            mDatabaseManager.actionReplacePunchSimple(p)
 
             val broadcastIntent = Intent(BROADCAST_ACTION)
             sendBroadcast(broadcastIntent)
