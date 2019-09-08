@@ -37,8 +37,8 @@ const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 const val TAG = "MainFragment"
 
-const val REQUEST_BLUETOOTH = 1
-
+const val REQUEST_GPS = 1
+const val REQUEST_BLUETOOTH = 2
 class MainFragment : Fragment() {
     /*
             VARIABLES
@@ -146,7 +146,7 @@ class MainFragment : Fragment() {
         acceptPermissions(
             arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ), 1
+            ), REQUEST_GPS
         )
     }
 
@@ -202,7 +202,7 @@ class MainFragment : Fragment() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
-            1 -> {
+            REQUEST_GPS -> {
                 if (permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION)
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         mGpsPermissionAccepted = true
