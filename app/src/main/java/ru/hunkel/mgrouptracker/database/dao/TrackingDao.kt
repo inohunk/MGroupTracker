@@ -48,6 +48,9 @@ interface TrackingDao {
     @Query("SELECT * FROM punches WHERE control_point = :cp")
     fun getPunchByControlPoint(cp: Int): Punches
 
+    /**
+     * Use this function for getting punches before certain time stamp
+     */
     @Query("SELECT * FROM punches WHERE time < :time")
     fun getPunchesBeforeCertainTime(time: Long): List<Punches>
 }
