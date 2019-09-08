@@ -148,10 +148,10 @@ class TrackingService : Service(), BeaconConsumer {
     */
     override fun onCreate() {
         mDatabaseManager = DatabaseManager(this)
+        mTimeManager = TimeManagerNew(this)
         initBeaconManager()
         startOnClick()
         startLocationService()
-        mTimeManager = TimeManagerNew(this)
     }
 
     override fun onBind(intent: Intent): IBinder {
