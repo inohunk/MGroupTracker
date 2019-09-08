@@ -69,6 +69,10 @@ class TrackingService : Service(), BeaconConsumer {
 
     private var mPunchUpdateState = PUNCH_UPDATE_STATE_ADD
 
+    //Objects
+    private lateinit var mTimeManager: TimeManagerNew
+
+
     //LOCATION SERVICE
     var locationService: ILocationService? = null
     var isServiceConnected = false
@@ -88,8 +92,6 @@ class TrackingService : Service(), BeaconConsumer {
             )
         }
     }
-
-    private lateinit var mTimeManager: TimeManagerNew
 
     private inner class TimeManagerNew(context: Context) : TimeManager(context) {
         override fun onGpsTimeReceived() {

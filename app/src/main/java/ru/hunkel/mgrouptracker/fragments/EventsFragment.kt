@@ -29,11 +29,6 @@ class EventsFragment : Fragment() {
     private lateinit var mEventRecyclerView: RecyclerView
     private lateinit var mDatabaseManager: DatabaseManager
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,7 +49,7 @@ class EventsFragment : Fragment() {
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        when (item!!.itemId) {
+        when (item.itemId) {
             ACTION_DELETE -> {
                 val event = events[item.order]
                 Log.i(
@@ -72,7 +67,6 @@ class EventsFragment : Fragment() {
         }
         return true
     }
-
 
     /*
         INNER CLASSES
