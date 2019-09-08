@@ -129,7 +129,7 @@ class TrackingService : Service(), BeaconConsumer {
     */
     inner class TrackingServiceImpl : ITrackingService.Stub() {
         override fun startEvent() {
-            mDatabaseManager.actionStartEvent()
+            mDatabaseManager.actionStartEvent(mTimeManager.getTime())
             startOnClick()
         }
 
@@ -398,7 +398,7 @@ class TrackingService : Service(), BeaconConsumer {
         createNotification()
         updateWakeLock()
 
-        mDatabaseManager.actionStartEvent()
+        mDatabaseManager.actionStartEvent(mTimeManager.getTime())
         mTrackingState = STATE_ON
     }
 

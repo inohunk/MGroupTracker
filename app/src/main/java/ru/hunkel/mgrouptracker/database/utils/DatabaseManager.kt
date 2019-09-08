@@ -17,7 +17,7 @@ class DatabaseManager(context: Context) {
     //Events
     fun actionStartEvent(time: Long) {
         val event = Event(
-            startTime = System.currentTimeMillis()
+            startTime = time
         )
         Log.i(TAG, "event started")
         mCurrentEvent = event
