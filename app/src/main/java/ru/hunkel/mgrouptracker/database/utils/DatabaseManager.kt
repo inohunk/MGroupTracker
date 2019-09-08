@@ -14,7 +14,8 @@ class DatabaseManager(context: Context) {
 
     private var mCurrentEvent: Event = Event()
 
-    fun actionStartEvent() {
+    //Events
+    fun actionStartEvent(time: Long) {
         val event = Event(
             startTime = System.currentTimeMillis()
         )
@@ -66,6 +67,22 @@ class DatabaseManager(context: Context) {
         return events
     }
 
+    fun actionDeleteEvent(event: Event) {
+        Log.i(
+            TAG,
+            "REMOVED EVENT INFO:\n\t" +
+                    "id: ${event.id}\n\t" +
+                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
+                    "end time: ${convertLongToTime(event.endTime)}\n"
+        )
+        mDb.trackingModel().deleteEvent(event)
+    }
+
+    fun actionGetEventById(id: Int): Event {
+        return mDb.trackingModel().getEventById(id)
+    }
+
+    //Punches
     fun actionAddPunch(punch: Punches) {
         mDb.trackingModel().addPunch(punch)
         val lastPunch = mDb.trackingModel().getLastPunch()
@@ -109,21 +126,6 @@ class DatabaseManager(context: Context) {
             Log.i(TAG, "\t${punch.controlPoint}\n")
         }
         return punches
-    }
-
-    fun actionDeleteEvent(event: Event) {
-        Log.i(
-            TAG,
-            "REMOVED EVENT INFO:\n\t" +
-                    "id: ${event.id}\n\t" +
-                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
-                    "end time: ${convertLongToTime(event.endTime)}\n"
-        )
-        mDb.trackingModel().deleteEvent(event)
-    }
-
-    fun actionGetEventById(id: Int): Event {
-        return mDb.trackingModel().getEventById(id)
     }
 
     fun actionGetPunchByControlPoint(cp: Int): Punches {
