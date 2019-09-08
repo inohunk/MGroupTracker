@@ -7,9 +7,11 @@ import android.app.Activity.RESULT_OK
 import android.bluetooth.BluetoothAdapter
 import android.content.*
 import android.content.pm.PackageManager
+import android.net.Uri.fromParts
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -39,6 +41,7 @@ const val TAG = "MainFragment"
 
 const val REQUEST_GPS = 1
 const val REQUEST_BLUETOOTH = 2
+
 class MainFragment : Fragment() {
     /*
             VARIABLES
@@ -94,7 +97,7 @@ class MainFragment : Fragment() {
         updateUIWithCurrentState(false)
 
         mPunchRecyclerView = punch_recycler_view
-        mPunchRecyclerView.layoutManager = LinearLayoutManager(context)
+        mPunchRecyclerView.layoutManager = LinearLayoutManager(context!!)
         mDbManager = DatabaseManager(context!!)
 
         try {
@@ -164,11 +167,11 @@ class MainFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         if (mServiceBounded) {
             context!!.unbindService(mTrackingServiceConnection)
         }
         context!!.unregisterReceiver(mBroadcastReceiver)
+        super.onDestroy()
     }
 
     private fun acceptPermissions(permissions: Array<String>, requestCode: Int) {
@@ -183,10 +186,23 @@ class MainFragment : Fragment() {
                         ).show()
                         requestPermissions(permissions, requestCode)
                     } else {
-//                        ActivityCompat.requestPermissions(activity!!, permissions, requestCode)
+                        Toast.makeText(
+                            context,
+                            "Разрешение на местоположение необходимо для записи ваших треков",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        val intent = Intent()
+                        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
+
+                        val uri = fromParts("package", context!!.packageName, null)
+                        intent.data = uri
+
+                        startActivity(intent)
                         requestPermissions(permissions, requestCode)
                     }
                 } else {
+                    mGpsPermissionAccepted = true
                     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
                     if (mBluetoothAdapter.isEnabled) {
@@ -240,17 +256,23 @@ class MainFragment : Fragment() {
     }
 
     private fun startTracking() {
-        val serviceIntent =
-            Intent(context, TrackingService::class.java)
-        context!!.startService(serviceIntent)
-        context!!.bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
+        if (ContextCompat.checkSelfPermission(
+                context!!,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            val serviceIntent =
+                Intent(context, TrackingService::class.java)
+            context!!.startService(serviceIntent)
+            context!!.bindService(serviceIntent, mTrackingServiceConnection, Context.BIND_WAIVE_PRIORITY)
 
-        updateUIWithCurrentState(true)
-        mServiceBounded = true
-        try {
-            (mPunchRecyclerView.adapter as PunchAdapter).clear()
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
+            updateUIWithCurrentState(true)
+            mServiceBounded = true
+            try {
+                (mPunchRecyclerView.adapter as PunchAdapter).clear()
+            } catch (ex: Exception) {
+                Log.e(TAG, ex.message)
+            }
         }
     }
 
