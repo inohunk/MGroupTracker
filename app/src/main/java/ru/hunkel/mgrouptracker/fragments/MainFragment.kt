@@ -34,6 +34,7 @@ import ru.hunkel.mgrouptracker.utils.PATTERN_HMS_DATE
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
@@ -332,7 +333,7 @@ class MainFragment : Fragment() {
             val eventStartTime = mDbManager.actionGetLastEvent().startTime
             val format = SimpleDateFormat("HH:mm:ss")
             format.timeZone = TimeZone.getTimeZone("UTC")
-            val diff = punch.time - eventStartTime
+            val diff = abs(punch.time - eventStartTime)
             view.punch_time_text_view.text = "${convertLongToTime(punch.time, PATTERN_HMS_DATE)}"
             view.from_start_time_text_view.text = "${format.format(Date(diff))}"
         }
