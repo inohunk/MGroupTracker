@@ -108,7 +108,7 @@ class TrackingService : Service(), BeaconConsumer {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mGpsService = IGPSTrackerServiceRemote.Stub.asInterface(service)
-            //TODO refactor
+
             mServerUrl = mGpsService!!.punchesUploadUrl
             Log.i(TAG, "ogps url: " + mGpsService!!.punchesUploadUrl)
             Log.i(
@@ -349,17 +349,15 @@ class TrackingService : Service(), BeaconConsumer {
             Log.i(TAG, "added to list")
 
         }
-        sendPunches()
     }
 
     private fun sendPunches() {
         val jsonString = createJsonByPunchList()
-//        mDataSender.uploadPunches(jsonString, "http://192.168.43.150:2023/")
-        Log.i("ogps", mServerUrl)
+//        mDataSender.sendPunches(jsonString, "http://192.168.43.150:2023/")
+//        mDataSender.sendPunches(jsonString, "https://postman-echo.com/post")
         if (mServerUrl != "") {
-            mDataSender.uploadPunches(jsonString, mServerUrl)
+            mDataSender.sendPunches(jsonString, mServerUrl)
         }
-        //TODO send to OGPSCenter
     }
 
     private fun createJsonByPunchList(): String {
