@@ -65,6 +65,8 @@ class TrackingService : Service(), BeaconConsumer {
 
     private var updateControlPointAfter = DEFAULT_CONTROL_POINT_UPDATE
 
+    private var mServerUrl = ""
+
     //Collections
     private val mPunchesIdentifiers = LinkedList<Int>()
     private val mPunches = LinkedList<Punches>()
@@ -106,6 +108,9 @@ class TrackingService : Service(), BeaconConsumer {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mGpsService = IGPSTrackerServiceRemote.Stub.asInterface(service)
+            //TODO refactor
+            mServerUrl = mGpsService!!.punchesUploadUrl
+            Log.i(TAG, "ogps url: " + mGpsService!!.punchesUploadUrl)
             Log.i(
                 TAG, "ogpscenter connected" +
                         "\ncomponent name: ${name.toString()}"
@@ -148,6 +153,9 @@ class TrackingService : Service(), BeaconConsumer {
         initBeaconManager()
         startOnClick()
         startLocationService()
+        startOGPSCenterService()
+//        unbindService(mOGPSCenterServiceConnection)
+
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -339,7 +347,11 @@ class TrackingService : Service(), BeaconConsumer {
 
     private fun sendPunches() {
         val jsonString = createJsonByPunchList()
-        mDataSender.uploadPunches(jsonString, "http://192.168.43.150:2023/")
+//        mDataSender.uploadPunches(jsonString, "http://192.168.43.150:2023/")
+        Log.i("ogps", mServerUrl)
+        if (mServerUrl != "") {
+            mDataSender.uploadPunches(jsonString, mServerUrl)
+        }
         //TODO send to OGPSCenter
     }
 
@@ -492,7 +504,7 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
-    private fun startOGPSCenterService(){
+    private fun startOGPSCenterService() {
         val serviceIntent = Intent()
         serviceIntent.component = ComponentName(
             "ru.ogpscenter.ogpstracker",
@@ -502,7 +514,7 @@ class TrackingService : Service(), BeaconConsumer {
             val res = bindService(
                 serviceIntent,
                 mOGPSCenterServiceConnection,
-                Context.BIND_WAIVE_PRIORITY
+                Context.BIND_AUTO_CREATE
             )
             Log.i(TAG + "TEST", "Service started: $res")
         } catch (ex: Exception) {
