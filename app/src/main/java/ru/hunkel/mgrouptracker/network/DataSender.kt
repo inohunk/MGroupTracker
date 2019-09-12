@@ -2,9 +2,7 @@ package ru.hunkel.mgrouptracker.network
 
 import android.util.Log
 import kotlinx.coroutines.*
-import java.io.IOException
 import java.io.InputStream
-import java.io.UnsupportedEncodingException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -12,7 +10,7 @@ const val TAG = "DataSender"
 
 class DataSender {
 
-    fun uploadPunches(jsonPunches: String, uploadUrl: String) {
+    fun sendPunches(jsonPunches: String, uploadUrl: String) {
         try {
             val mConnection = URL(uploadUrl).openConnection() as HttpURLConnection
             Log.i(TAG, "=====================================================")
@@ -21,7 +19,7 @@ class DataSender {
                 mConnection.requestMethod = "POST"
                 mConnection.setRequestProperty("Accept-Charset", "UTF-8")
                 mConnection.setRequestProperty("Content-Type", "application/json")
-                mConnection.setRequestProperty("Connection", "Keep-Alive");
+
                 mConnection.doInput = true
                 mConnection.doOutput = true
 
@@ -38,37 +36,30 @@ class DataSender {
                         val result = async {
                             handleData(mConnection.inputStream)
                         }
-                        Log.i(TAG, result.await())
+                        Log.i(TAG, "response message: ${result.await()}")
                     }
                     else -> {
                         val result = async {
                             handleData(mConnection.errorStream)
                         }
-                        Log.i(TAG, result.await())
-
+                        Log.i(TAG, "response message: ${result.await()}")
                     }
                 }
-
-
             }
             CoroutineScope(Dispatchers.Default).launch {
                 job.join()
             }
-        } catch (e: UnsupportedEncodingException) {
-            Log.e(TAG, "UnsupportedEncodingException in uploadPoints", e) //NON-NLS
-        } catch (e: IOException) {
-            Log.e(TAG, "UnsupportedEncodingException in uploadPoints", e) //NON-NLS
         } catch (e: Exception) {
             Log.e(TAG, "Exception in uploadPoints", e) //NON-NLS
         }
     }
 
-    private fun handleData(inStream: InputStream): String {
+    private fun handleData(stream: InputStream): String {
         var msg = ""
-        for (i in inStream.readBytes()) {
+        for (i in stream.readBytes()) {
             msg += i.toChar()
         }
-        Log.i(TAG, "ogps response message: $msg")
+        Log.i(TAG, "")
         return msg
     }
 }
