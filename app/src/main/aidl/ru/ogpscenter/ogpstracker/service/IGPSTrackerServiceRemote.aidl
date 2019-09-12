@@ -14,4 +14,5 @@ interface IGPSTrackerServiceRemote {
     Location getLastTrackPoint();
     long getLastTrackId();
 	int getNumberOfUploadedPoints();
+	String getPunchesUploadUrl();
 }
