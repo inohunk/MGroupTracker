@@ -110,6 +110,7 @@ class TrackingService : Service(), BeaconConsumer,
             mGpsService = IGPSTrackerServiceRemote.Stub.asInterface(service)
 
             mServerUrl = mGpsService!!.punchesUploadUrl
+            unbindOGPSCenterService()
             Log.i(TAG, "ogps url: " + mGpsService!!.punchesUploadUrl)
             Log.i(
                 TAG, "ogpscenter connected" +
@@ -117,7 +118,9 @@ class TrackingService : Service(), BeaconConsumer,
             )
         }
     }
-
+    private fun unbindOGPSCenterService(){
+        unbindService(mOGPSCenterServiceConnection)
+    }
     //Network state receiver
     private val mNetworkStateReceiver = NetworkStateReceiver()
     private var mNetworkStateReceiverRegistered = false
