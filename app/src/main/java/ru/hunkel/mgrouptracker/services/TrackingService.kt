@@ -334,6 +334,7 @@ class TrackingService : Service(), BeaconConsumer {
                         mDatabaseManager.actionReplacePunch(newPunch)
                     }
                 }
+                sendPunches()
                 sendBroadcast(broadcastIntent)
                 createNotificationForControlPoint(cp)
             }
@@ -347,7 +348,7 @@ class TrackingService : Service(), BeaconConsumer {
             sendBroadcast(intent)
             createNotificationForControlPoint(cp)
             Log.i(TAG, "added to list")
-
+            sendPunches()
         }
     }
 
