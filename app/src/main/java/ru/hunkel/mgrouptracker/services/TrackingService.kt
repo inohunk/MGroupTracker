@@ -344,27 +344,34 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     private fun createJsonByPunchList(): String {
-        val list = mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
+        val list =
+            mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
         val jsonArray = JSONArray()
+        var punchList = mutableListOf<Int>()
 
         for (i in list) {
-            val json = JSONObject()
-            json.put("uid", i.controlPoint)
-            json.put("name", "КП ${i.controlPoint}")
-            json.put("time", i.time)
-            json.put("score", (i.controlPoint / 10))
-            json.put("priority", 400)
+            if (punchList.contains(i.controlPoint)) {
+                continue
+            } else {
+                punchList.add(i.controlPoint)
+                val json = JSONObject()
+                json.put("uid", i.controlPoint)
+                json.put("name", "КП ${i.controlPoint}")
+                json.put("time", i.time)
+                json.put("score", (i.controlPoint / 10))
+                json.put("priority", 400)
 
 
-            val coordinates = JSONObject()
+                val coordinates = JSONObject()
 
-            coordinates.put("latitude", 0F)
-            coordinates.put("longitude", 0F)
+                coordinates.put("latitude", 0F)
+                coordinates.put("longitude", 0F)
 
-            json.put("coordinates", coordinates)
-            json.put("agent", "")
-            json.put("comment", "")
-            jsonArray.put(json)
+                json.put("coordinates", coordinates)
+                json.put("agent", "")
+                json.put("comment", "")
+                jsonArray.put(json)
+            }
         }
         Log.i(TAG, "JSON $jsonArray")
         return jsonArray.toString()
