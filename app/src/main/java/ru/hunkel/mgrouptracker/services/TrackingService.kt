@@ -17,6 +17,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.altbeacon.beacon.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -367,10 +370,19 @@ class TrackingService : Service(), BeaconConsumer,
     private fun sendPunches() {
         if (isConnected()) {
             val jsonString = createJsonByPunchList()
-//        mDataSender.sendPunches(jsonString, "http://192.168.43.150:2023/")
-//        mDataSender.sendPunches(jsonString, "https://postman-echo.com/post")
+
             if (mServerUrl != "") {
-                mDataSender.sendPunches(jsonString, mServerUrl)
+                CoroutineScope(Dispatchers.Default).launch {
+                    //        mDataSender.sendPunches(jsonString, "http://192.168.43.150:2023/")
+//                    mDataSender.sendPunches(jsonString, "https://postman-echo.com/post"){
+//                    if (mDataSender.sendPunchesAsync(jsonString, "https://postman-echo.com/get").await()){
+                    if (mDataSender.sendPunchesAsync(jsonString, mServerUrl).await()) {
+                        Log.i(TAG, "POSTED")
+                    } else {
+                        Log.i(TAG, "NOT POSTED")
+                        //TODO write timer task
+                    }
+                }
             }
         } else {
             if (!mNetworkStateReceiverRegistered) {
