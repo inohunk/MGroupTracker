@@ -70,6 +70,8 @@ class TrackingService : Service(), BeaconConsumer,
 
     private var mServerUrl = ""
 
+    private var mTimeSynchronized = false
+
     //Collections
     private val mPunchesIdentifiers = LinkedList<Int>()
     private val mPunches = LinkedList<Punches>()
@@ -141,9 +143,12 @@ class TrackingService : Service(), BeaconConsumer,
             startOnClick()
         }
 
-        override fun stopEvent() {
-            mDatabaseManager.actionStopEvent(mTimeManager.getTime())
+        override fun stopEvent():Long {
+            val endTime = mTimeManager.getTime()
+            mDatabaseManager.actionStopEvent(endTime)
             stopOnClick()
+            stopLocationService()
+            return endTime
         }
 
         override fun getState(): Int {
@@ -152,8 +157,9 @@ class TrackingService : Service(), BeaconConsumer,
     }
 
     private inner class TimeManagerNew(context: Context) : TimeManager(context) {
-        override fun onGpsTimeReceived() {
+        override fun onGpsTimeReceived(time: Long) {
             fixTimeInDatabase(mTimeManager.getTime())
+            mTimeSynchronized = true
         }
     }
 
@@ -364,7 +370,7 @@ class TrackingService : Service(), BeaconConsumer,
     }
 
     private fun sendPunches() {
-        if (isConnected()) {
+        if (isConnected() and mTimeSynchronized) {
             val jsonString = createJsonByPunchList()
 
             if (mServerUrl != "") {
@@ -380,7 +386,7 @@ class TrackingService : Service(), BeaconConsumer,
                     }
                 }
             }
-        } else {
+        } else if (isConnected().not()) {
             if (!mNetworkStateReceiverRegistered) {
                 //TODO rewrite with network callback
                 NetworkStateReceiver.networkStateReceiverListener = this

@@ -51,7 +51,7 @@ abstract class TimeManager(private val context: Context) : LocationListener {
 
     }
 
-    abstract fun onGpsTimeReceived()
+    abstract fun onGpsTimeReceived(time: Long)
 
     private fun getTimeFromSystem(): Long {
         return System.currentTimeMillis()
@@ -60,7 +60,7 @@ abstract class TimeManager(private val context: Context) : LocationListener {
     override fun onLocationChanged(location: Location?) {
         mDeltaTime = abs(mTime - location!!.time)
         mTime = location.time
-        onGpsTimeReceived()
+        onGpsTimeReceived(mTime)
         Log.i("TTT", "onLocationChanged")
     }
 
