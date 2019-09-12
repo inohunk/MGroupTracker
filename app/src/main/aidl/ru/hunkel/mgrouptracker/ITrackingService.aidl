@@ -5,6 +5,6 @@ package ru.hunkel.mgrouptracker;
 
 interface ITrackingService {
     void startEvent();
-    void stopEvent();
+    long stopEvent();
     int getState();
 }

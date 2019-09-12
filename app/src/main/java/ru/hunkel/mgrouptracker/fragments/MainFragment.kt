@@ -163,7 +163,11 @@ class MainFragment : Fragment() {
     }
 
     private fun stopServiceOnClick() {
-
+        end_time_text_view.text = convertLongToTime(
+            mTrackingService!!.stopEvent(),
+            PATTERN_HOUR_MINUTE_SECOND
+        )
+        end_time_text_view.visibility = View.VISIBLE
         context!!.unbindService(mTrackingServiceConnection)
         context!!.stopService(Intent(context, TrackingService::class.java))
         updateUIWithCurrentState(false)
@@ -316,7 +320,7 @@ class MainFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: PunchViewHolder, position: Int) {
-            holder.view.setBackgroundColor(colorList[position % 2])
+            holder.view.setBackgroundColor(colorList[(position % 2)])
             holder.bind(punchList[position], position)
         }
 

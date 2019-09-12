@@ -171,17 +171,11 @@ class TrackingService : Service(), BeaconConsumer,
 
         mConnectivityManager =
             this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        unbindService(mOGPSCenterServiceConnection)
 
     }
 
     override fun onBind(intent: Intent): IBinder {
         return TrackingServiceImpl()
-    }
-
-    override fun onDestroy() {
-        stopOnClick()
-        stopLocationService()
     }
 
     override fun onBeaconServiceConnect() {
@@ -472,14 +466,12 @@ class TrackingService : Service(), BeaconConsumer,
     }
 
     fun stopOnClick() {
+//        mDatabaseManager.actionStopEvent(mTimeManager.getTime())
+
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
 
-        updateWakeLock()
-        mDatabaseManager.actionStopEvent(mTimeManager.getTime())
-        mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
         mTrackingState = STATE_OFF
-
     }
 
     private fun updateWakeLock() {
