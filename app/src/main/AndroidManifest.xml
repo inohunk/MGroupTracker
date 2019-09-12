@@ -37,7 +37,6 @@
 
         <receiver
                 android:name=".receivers.NetworkStateReceiver"
-
                 android:enabled="true">
             <intent-filter>
                 <action

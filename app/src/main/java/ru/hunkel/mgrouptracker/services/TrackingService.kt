@@ -121,9 +121,11 @@ class TrackingService : Service(), BeaconConsumer,
             )
         }
     }
-    private fun unbindOGPSCenterService(){
+
+    private fun unbindOGPSCenterService() {
         unbindService(mOGPSCenterServiceConnection)
     }
+
     //Network state receiver
     private val mNetworkStateReceiver = NetworkStateReceiver()
     private var mNetworkStateReceiverRegistered = false
