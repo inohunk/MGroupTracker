@@ -15,27 +15,45 @@ class DataSender {
     fun uploadPunches(jsonPunches: String, uploadUrl: String) {
         try {
             val mConnection = URL(uploadUrl).openConnection() as HttpURLConnection
-
+            Log.i(TAG, "=====================================================")
+            Log.i(TAG, "upload url: ${mConnection.url}")
             val job = GlobalScope.launch {
-                mConnection.setRequestProperty("Accept-Charset", "UTF-8")
                 mConnection.requestMethod = "POST"
+                mConnection.setRequestProperty("Accept-Charset", "UTF-8")
+                mConnection.setRequestProperty("Content-Type", "application/json")
+                mConnection.setRequestProperty("Connection", "Keep-Alive");
                 mConnection.doInput = true
                 mConnection.doOutput = true
 
-                val os = mConnection.outputStream
-                os.write(jsonPunches.toByteArray(Charsets.UTF_8))
                 mConnection.connect()
-                Log.i("RRR", mConnection.responseCode.toString())
-
-                val result = async {
-                    mConnection.inputStream
+                Log.i(TAG, "connect success")
+                mConnection.outputStream.use {
+                    val input = jsonPunches.toByteArray(Charsets.UTF_8)
+                    it.write(input, 0, input.size)
                 }
-                handleData(result.await())
+
+                Log.i(TAG, "response code: ${mConnection.responseCode}")
+                when (mConnection.responseCode) {
+                    200, 201 -> {
+                        val result = async {
+                            handleData(mConnection.inputStream)
+                        }
+                        Log.i(TAG, result.await())
+                    }
+                    else -> {
+                        val result = async {
+                            handleData(mConnection.errorStream)
+                        }
+                        Log.i(TAG, result.await())
+
+                    }
+                }
+
+
             }
             CoroutineScope(Dispatchers.Default).launch {
                 job.join()
             }
-
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UnsupportedEncodingException in uploadPoints", e) //NON-NLS
         } catch (e: IOException) {
@@ -49,9 +67,8 @@ class DataSender {
         var msg = ""
         for (i in inStream.readBytes()) {
             msg += i.toChar()
-//            Log.i(TAG, i)
         }
-        Log.i(TAG, msg)
+        Log.i(TAG, "ogps response message: $msg")
         return msg
     }
 }
