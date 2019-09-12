@@ -28,6 +28,7 @@ import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
 import ru.hunkel.mgrouptracker.fragments.MainFragment
+import ru.hunkel.mgrouptracker.network.DataSender
 import ru.hunkel.mgrouptracker.utils.*
 import ru.hunkel.servicesipc.ILocationService
 import ru.ogpscenter.ogpstracker.service.IGPSTrackerServiceRemote
@@ -72,7 +73,7 @@ class TrackingService : Service(), BeaconConsumer {
 
     //Objects
     private lateinit var mTimeManager: TimeManagerNew
-
+    private val mDataSender = DataSender()
 
     //LOCATION SERVICE
     var locationService: ILocationService? = null
@@ -332,12 +333,13 @@ class TrackingService : Service(), BeaconConsumer {
             createNotificationForControlPoint(cp)
             Log.i(TAG, "added to list")
 
-            sendPunches()
         }
+        sendPunches()
     }
 
     private fun sendPunches() {
         val jsonString = createJsonByPunchList()
+        mDataSender.uploadPunches(jsonString, "http://192.168.43.150:2023/")
         //TODO send to OGPSCenter
     }
 
