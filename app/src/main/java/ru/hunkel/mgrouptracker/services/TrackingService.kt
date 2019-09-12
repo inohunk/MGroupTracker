@@ -4,12 +4,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
@@ -29,13 +27,15 @@ import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
 import ru.hunkel.mgrouptracker.fragments.MainFragment
 import ru.hunkel.mgrouptracker.network.DataSender
+import ru.hunkel.mgrouptracker.receivers.NetworkStateReceiver
 import ru.hunkel.mgrouptracker.utils.*
 import ru.hunkel.servicesipc.ILocationService
 import ru.ogpscenter.ogpstracker.service.IGPSTrackerServiceRemote
 import java.util.*
 import kotlin.math.abs
 
-class TrackingService : Service(), BeaconConsumer {
+class TrackingService : Service(), BeaconConsumer,
+    NetworkStateReceiver.NetworkStateReceiverListener {
 
     /*
         VARIABLES
@@ -118,6 +118,12 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    //Network state receiver
+    private val mNetworkStateReceiver = NetworkStateReceiver()
+    private var mNetworkStateReceiverRegistered = false
+
+    private lateinit var mConnectivityManager: ConnectivityManager
+
     /*
         INNER CLASSES
     */
@@ -154,6 +160,9 @@ class TrackingService : Service(), BeaconConsumer {
         startOnClick()
         startLocationService()
         startOGPSCenterService()
+
+        mConnectivityManager =
+            this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 //        unbindService(mOGPSCenterServiceConnection)
 
     }
@@ -353,11 +362,24 @@ class TrackingService : Service(), BeaconConsumer {
     }
 
     private fun sendPunches() {
-        val jsonString = createJsonByPunchList()
+        if (isConnected()) {
+            val jsonString = createJsonByPunchList()
 //        mDataSender.sendPunches(jsonString, "http://192.168.43.150:2023/")
 //        mDataSender.sendPunches(jsonString, "https://postman-echo.com/post")
-        if (mServerUrl != "") {
-            mDataSender.sendPunches(jsonString, mServerUrl)
+            if (mServerUrl != "") {
+                mDataSender.sendPunches(jsonString, mServerUrl)
+            }
+        } else {
+            if (!mNetworkStateReceiverRegistered) {
+                //TODO rewrite with network callback
+                NetworkStateReceiver.networkStateReceiverListener = this
+                registerReceiver(
+                    mNetworkStateReceiver,
+                    IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+                )
+                mNetworkStateReceiverRegistered = true
+                Log.i(TAG, "BR. NO NETWORK CONNECTION. RECEIVER REGISTERED")
+            }
         }
     }
 
@@ -532,4 +554,15 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    override fun onNetworkConnectionChanged(isConnected: Boolean) {
+        if (isConnected) {
+            sendPunches()
+            Log.i(TAG, "BR. CONNECTION ESTABLISHED. TRYING TO SEND AGAIN.")
+        }
+    }
+
+    private fun isConnected(): Boolean {
+        val networkInfo = mConnectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
 }
