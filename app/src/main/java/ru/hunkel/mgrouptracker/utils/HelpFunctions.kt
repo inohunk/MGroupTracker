@@ -5,6 +5,7 @@ import java.util.*
 
 //Date patterns
 const val PATTERN_FULL_DATE = "yyyy.MM.dd HH:mm:ss"
+const val PATTERN_ONLY_DATE = "yyyy-MM-dd"
 const val PATTERN_HMS_DATE = "HH:mm:ss"
 
 fun convertLongToTime(time: Long): String {

@@ -373,9 +373,13 @@ class TrackingService : Service(), BeaconConsumer {
             } else {
                 punchList.add(i.controlPoint)
                 val json = JSONObject()
-                json.put("uid", i.controlPoint)
+                json.put("uid", i.controlPoint.toString())
                 json.put("name", "КП ${i.controlPoint}")
-                json.put("time", i.time)
+                json.put(
+                    "time",
+                    convertLongToTime(i.time, PATTERN_ONLY_DATE) + "T" +
+                            convertLongToTime(i.time, PATTERN_HMS_DATE) + "Z"
+                )
                 json.put("score", (i.controlPoint / 10))
                 json.put("priority", 400)
 
