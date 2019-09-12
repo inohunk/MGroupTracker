@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_punch.*
+import kotlinx.android.synthetic.main.activity_punch.view.*
 import kotlinx.android.synthetic.main.punch_list_item.view.*
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
@@ -78,7 +79,10 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.activity_main, container, false)
+        val view = inflater.inflate(R.layout.activity_main, container, false)
+        view.start_time_text_view.visibility = View.GONE
+        view.end_time_text_view.visibility = View.GONE
+        return view
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -127,7 +131,6 @@ class MainFragment : Fragment() {
             R.id.settings_button -> {
                 if (mServiceBounded.not()) {
                     findNavController().navigate(MainFragmentDirections.actionGoToSettings())
-
                 } else {
                     Toast.makeText(
                         context,
@@ -140,7 +143,6 @@ class MainFragment : Fragment() {
             R.id.info_button -> {
                 if (mServiceBounded.not()) {
                     findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
-
                 } else {
                     Toast.makeText(
                         context,
@@ -289,6 +291,10 @@ class MainFragment : Fragment() {
                 serviceIntent,
                 mTrackingServiceConnection,
                 Context.BIND_WAIVE_PRIORITY
+            )
+            start_time_text_view.text = convertLongToTime(
+                System.currentTimeMillis(),
+                PATTERN_HOUR_MINUTE_SECOND
             )
 
             updateUIWithCurrentState(true)
