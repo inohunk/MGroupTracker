@@ -30,6 +30,7 @@ import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
 import ru.hunkel.mgrouptracker.fragments.MainFragment
 import ru.hunkel.mgrouptracker.utils.*
 import ru.hunkel.servicesipc.ILocationService
+import ru.ogpscenter.ogpstracker.service.IGPSTrackerServiceRemote
 import java.util.*
 import kotlin.math.abs
 
@@ -93,36 +94,21 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
-    private inner class TimeManagerNew(context: Context) : TimeManager(context) {
-        override fun onGpsTimeReceived() {
-            fixTimeInDatabase(mTimeManager.getTime())
-        }
-    }
+    //OGPSCenter service connection
+    var mGpsService: IGPSTrackerServiceRemote? = null
 
-    private fun startLocationService() {
-        val serviceIntent = Intent()
-        serviceIntent.component = ComponentName(
-            "ru.hunkel.servicesipc",
-            "ru.hunkel.servicesipc.services.LocationService"
-        )
-        try {
-            val res = bindService(
-                serviceIntent,
-                locationServiceConnection,
-                Context.BIND_WAIVE_PRIORITY
+    private val mOGPSCenterServiceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+            mGpsService = null
+            Log.i(TAG, "ogpscenter service disconnected")
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            mGpsService = IGPSTrackerServiceRemote.Stub.asInterface(service)
+            Log.i(
+                TAG, "ogpscenter connected" +
+                        "\ncomponent name: ${name.toString()}"
             )
-            Log.i(TAG + "TEST", "Service started: $res")
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
-        }
-
-    }
-
-    private fun stopLocationService() {
-        if (isServiceConnected) {
-            locationService!!.stopTracking()
-            unbindService(locationServiceConnection)
-            isServiceConnected = false
         }
     }
 
@@ -145,9 +131,16 @@ class TrackingService : Service(), BeaconConsumer {
         }
     }
 
+    private inner class TimeManagerNew(context: Context) : TimeManager(context) {
+        override fun onGpsTimeReceived() {
+            fixTimeInDatabase(mTimeManager.getTime())
+        }
+    }
+
     /*
-        FUNCTIONS
+        Override functions
     */
+
     override fun onCreate() {
         mDatabaseManager = DatabaseManager(this)
         mTimeManager = TimeManagerNew(this)
@@ -165,6 +158,69 @@ class TrackingService : Service(), BeaconConsumer {
         stopLocationService()
     }
 
+    override fun onBeaconServiceConnect() {
+        mBeaconManager.removeAllRangeNotifiers()
+
+        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+
+        val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
+        val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
+        val betweenScanPeriod = (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
+        mPunchUpdateState = (pm.getString("update_punch_params", "0")).toInt()
+        updateControlPointAfter = (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
+
+        mBeaconManager.foregroundScanPeriod = scanPeriod
+        mBeaconManager.backgroundBetweenScanPeriod = betweenScanPeriod
+        mBeaconManager.backgroundScanPeriod = scanPeriod
+        mBeaconManager.foregroundBetweenScanPeriod = betweenScanPeriod
+        mBeaconManager.applySettings()
+
+        Log.i(TAG + "DISTANCE", distance.toString())
+        mBeaconManager.addRangeNotifier { beacons, _ ->
+
+            updateWakeLock()
+            if (beacons.isNotEmpty()) {
+                val iterator = beacons.iterator()
+
+                while (iterator.hasNext()) {
+                    val beacon = iterator.next()
+                    if (beacon.distance <= distance) {
+                        checkInList(beacon.id3.toInt())
+                    }
+                    Log.i(
+                        TAG, "FOUNDED BEACON:\n" +
+                                "\tid1: ${beacon.id1}\n" +
+                                "\tid2: ${beacon.id2}\n" +
+                                "\tid3: ${beacon.id3}\n" +
+                                "\tmanufacturer: ${beacon.manufacturer}\n" +
+                                "\ttxPower: ${beacon.txPower}\n" +
+                                "\trssi: ${beacon.rssi}\n" +
+                                "\tdistance: ${beacon.distance}\n"
+                    )
+                }
+
+            }
+        }
+
+        try {
+            val major = Identifier.fromInt(0xCDBF)
+            val region = Region(
+                "cpSearch",
+                null,
+                major,
+                null
+            )
+            mBeaconManager.startRangingBeaconsInRegion(region)
+
+        } catch (e: RemoteException) {
+            Log.e(TAG, e.message)
+        }
+
+    }
+
+    /*
+        Functions
+     */
     private fun initBeaconManager() {
         mBeaconManager = BeaconManager.getInstanceForApplication(this)
         mBeaconManager.backgroundMode = true
@@ -232,65 +288,6 @@ class TrackingService : Service(), BeaconConsumer {
 
     }
 
-    override fun onBeaconServiceConnect() {
-        mBeaconManager.removeAllRangeNotifiers()
-
-        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
-
-        val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
-        val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
-        val betweenScanPeriod = (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
-        mPunchUpdateState = (pm.getString("update_punch_params", "0")).toInt()
-        updateControlPointAfter = (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
-
-        mBeaconManager.foregroundScanPeriod = scanPeriod
-        mBeaconManager.backgroundBetweenScanPeriod = betweenScanPeriod
-        mBeaconManager.backgroundScanPeriod = scanPeriod
-        mBeaconManager.foregroundBetweenScanPeriod = betweenScanPeriod
-        mBeaconManager.applySettings()
-
-        Log.i(TAG + "DISTANCE", distance.toString())
-        mBeaconManager.addRangeNotifier { beacons, _ ->
-
-            updateWakeLock()
-            if (beacons.isNotEmpty()) {
-                val iterator = beacons.iterator()
-
-                while (iterator.hasNext()) {
-                    val beacon = iterator.next()
-                    if (beacon.distance <= distance) {
-                        checkInList(beacon.id3.toInt())
-                    }
-                    Log.i(
-                        TAG, "FOUNDED BEACON:\n" +
-                                "\tid1: ${beacon.id1}\n" +
-                                "\tid2: ${beacon.id2}\n" +
-                                "\tid3: ${beacon.id3}\n" +
-                                "\tmanufacturer: ${beacon.manufacturer}\n" +
-                                "\ttxPower: ${beacon.txPower}\n" +
-                                "\trssi: ${beacon.rssi}\n" +
-                                "\tdistance: ${beacon.distance}\n"
-                    )
-                }
-
-            }
-        }
-
-        try {
-            val major = Identifier.fromInt(0xCDBF)
-            val region = Region(
-                "cpSearch",
-                null,
-                major,
-                null
-            )
-            mBeaconManager.startRangingBeaconsInRegion(region)
-
-        } catch (e: RemoteException) {
-            Log.e(TAG, e.message)
-        }
-
-    }
 
     private fun checkInList(cp: Int) {
         val newPunch = Punches(
@@ -459,4 +456,49 @@ class TrackingService : Service(), BeaconConsumer {
             sendBroadcast(broadcastIntent)
         }
     }
+
+    private fun startLocationService() {
+        val serviceIntent = Intent()
+        serviceIntent.component = ComponentName(
+            "ru.hunkel.servicesipc",
+            "ru.hunkel.servicesipc.services.LocationService"
+        )
+        try {
+            val res = bindService(
+                serviceIntent,
+                locationServiceConnection,
+                Context.BIND_WAIVE_PRIORITY
+            )
+            Log.i(TAG + "TEST", "Service started: $res")
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.message)
+        }
+    }
+
+    private fun stopLocationService() {
+        if (isServiceConnected) {
+            locationService!!.stopTracking()
+            unbindService(locationServiceConnection)
+            isServiceConnected = false
+        }
+    }
+
+    private fun startOGPSCenterService(){
+        val serviceIntent = Intent()
+        serviceIntent.component = ComponentName(
+            "ru.ogpscenter.ogpstracker",
+            "ru.ogpscenter.ogpstracker.service.GPSTrackerService"
+        )
+        try {
+            val res = bindService(
+                serviceIntent,
+                mOGPSCenterServiceConnection,
+                Context.BIND_WAIVE_PRIORITY
+            )
+            Log.i(TAG + "TEST", "Service started: $res")
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.message)
+        }
+    }
+
 }
