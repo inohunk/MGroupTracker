@@ -11,4 +11,7 @@
     <style name="ListItem">
         <item name="android:background">@drawable/sh_list_item</item>
     </style>
+    <style name="AppTheme.SplashTheme">
+        <item name="android:windowBackground">@drawable/background_splash</item>
+    </style>
 </resources>
