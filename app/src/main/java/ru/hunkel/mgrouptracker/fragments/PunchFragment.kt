@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.punch_list_item.view.*
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
-import ru.hunkel.mgrouptracker.utils.PATTERN_HMS_DATE
+import ru.hunkel.mgrouptracker.utils.PATTERN_HOUR_MINUTE_SECOND
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 import java.text.SimpleDateFormat
 import java.util.*
@@ -73,7 +73,7 @@ class PunchFragment : Fragment() {
                 val format = SimpleDateFormat("HH:mm:ss")
                 format.timeZone = TimeZone.getTimeZone("UTC")
                 val diff = punch.time - eventStartTime
-                view.punch_time_text_view.text = "${convertLongToTime(punch.time, PATTERN_HMS_DATE)}"
+                view.punch_time_text_view.text = "${convertLongToTime(punch.time, PATTERN_HOUR_MINUTE_SECOND)}"
                 view.from_start_time_text_view.text = "${format.format(Date(diff))}"
             }
         }

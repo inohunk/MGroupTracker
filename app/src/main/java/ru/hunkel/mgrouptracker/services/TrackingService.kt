@@ -399,8 +399,8 @@ class TrackingService : Service(), BeaconConsumer,
                 json.put("name", "КП ${i.controlPoint}")
                 json.put(
                     "time",
-                    convertLongToTime(i.time, PATTERN_ONLY_DATE) + "T" +
-                            convertLongToTime(i.time, PATTERN_HMS_DATE) + "Z"
+                    convertLongToTime(i.time, PATTERN_YEAR_MONTH_DAY) + "T" +
+                            convertLongToTime(i.time, PATTERN_HOUR_MINUTE_SECOND) + "Z"
                 )
                 json.put("score", (i.controlPoint / 10))
                 json.put("priority", 400)
