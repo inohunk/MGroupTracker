@@ -296,7 +296,7 @@ class MainFragment : Fragment() {
                 System.currentTimeMillis(),
                 PATTERN_HOUR_MINUTE_SECOND
             )
-
+            start_time_text_view.visibility = View.VISIBLE
             updateUIWithCurrentState(true)
             mServiceBounded = true
             try {
