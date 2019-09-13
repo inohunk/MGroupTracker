@@ -43,7 +43,7 @@
             app:title="Обновить время КП после(секунды)"
             app:useSimpleSummaryProvider="true" />
     <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="2"
             android:entries="@array/update_parameters_titles"
             android:entryValues="@array/update_parameters_values"
             android:icon="@drawable/ic_update_parameter"
