@@ -8,16 +8,9 @@
         tools:context=".activities.InfoActivity">
     <TextView
             android:id="@+id/info_text_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
             android:text="Ничего не найдено"
-            android:textAlignment="center"
-            android:textColor="@android:color/holo_red_dark"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            tools:visibility="gone" />
+            tools:visibility="gone"
+            style="@style/text_nothing_was_found" />
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/event_recycler_view"
             android:scrollbars="vertical"

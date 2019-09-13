@@ -14,4 +14,15 @@
     <style name="AppTheme.SplashTheme">
         <item name="android:windowBackground">@drawable/background_splash</item>
     </style>
+
+    <style name="text_nothing_was_found">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@android:color/holo_red_dark</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>
