@@ -37,6 +37,11 @@ import ru.ogpscenter.ogpstracker.service.IGPSTrackerServiceRemote
 import java.util.*
 import kotlin.math.abs
 
+const val TAG_DATABASE = "Database"
+const val TAG_OGPSCENTER = "OGPSCenter"
+const val TAG_NETWORK = "Network"
+const val TAG_BEACON = "Beacon"
+
 class TrackingService : Service(), BeaconConsumer,
     NetworkStateReceiver.NetworkStateReceiverListener {
 
@@ -115,17 +120,13 @@ class TrackingService : Service(), BeaconConsumer,
             mGpsService = IGPSTrackerServiceRemote.Stub.asInterface(service)
 
             mServerUrl = mGpsService!!.punchesUploadUrl
-            unbindOGPSCenterService()
-            Log.i(TAG, "ogps url: " + mGpsService!!.punchesUploadUrl)
+            stopOGPSCenterService()
+            Log.i(TAG_OGPSCENTER, "ogps url: " + mGpsService!!.punchesUploadUrl)
             Log.i(
-                TAG, "ogpscenter connected" +
+                TAG_OGPSCENTER, "ogpscenter connected" +
                         "\ncomponent name: ${name.toString()}"
             )
         }
-    }
-
-    private fun unbindOGPSCenterService() {
-        unbindService(mOGPSCenterServiceConnection)
     }
 
     //Network state receiver
@@ -143,7 +144,7 @@ class TrackingService : Service(), BeaconConsumer,
             startOnClick()
         }
 
-        override fun stopEvent():Long {
+        override fun stopEvent(): Long {
             val endTime = mTimeManager.getTime()
             mDatabaseManager.actionStopEvent(endTime)
             stopOnClick()
@@ -203,7 +204,6 @@ class TrackingService : Service(), BeaconConsumer,
         mBeaconManager.foregroundBetweenScanPeriod = betweenScanPeriod
         mBeaconManager.applySettings()
 
-        Log.i(TAG + "DISTANCE", distance.toString())
         mBeaconManager.addRangeNotifier { beacons, _ ->
 
             updateWakeLock()
@@ -216,7 +216,7 @@ class TrackingService : Service(), BeaconConsumer,
                         checkInList(beacon.id3.toInt())
                     }
                     Log.i(
-                        TAG, "FOUNDED BEACON:\n" +
+                        TAG_BEACON, "FOUNDED BEACON:\n" +
                                 "\tid1: ${beacon.id1}\n" +
                                 "\tid2: ${beacon.id2}\n" +
                                 "\tid3: ${beacon.id3}\n" +
@@ -329,15 +329,20 @@ class TrackingService : Service(), BeaconConsumer,
             controlPoint = cp
         )
         if (mPunchesIdentifiers.contains(cp)) {
-            Log.i(TAG, "already exists in list")
+            Log.i(TAG_BEACON, "Beacon $cp already exists in list")
             val punch = findPunchByControlPoint(cp)
             val currentTime = mTimeManager.getTime()
 
             if ((currentTime - punch.time > updateControlPointAfter) and (mPunchUpdateState != PUNCH_UPDATE_STATE_NOTHING)) {
-                Log.i(TAG, "TIME FOR CONTROL POINT NEED TO BE UPDATED")
 
                 val time = getTimeFromService(cp)
                 punch.time = time
+                Log.i(
+                    TAG_BEACON, "Beacon $cp time updated - ${convertLongToTime(
+                        time,
+                        PATTERN_FULL_DATE
+                    )}"
+                )
                 mPunches.remove(punch)
                 mPunches.add(newPunch)
 
@@ -364,7 +369,7 @@ class TrackingService : Service(), BeaconConsumer,
             val intent = Intent(BROADCAST_ACTION)
             sendBroadcast(intent)
             createNotificationForControlPoint(cp)
-            Log.i(TAG, "added to list")
+            Log.i(TAG_BEACON, "Beacon $cp added to list")
             sendPunches()
         }
     }
@@ -379,9 +384,9 @@ class TrackingService : Service(), BeaconConsumer,
 //                    mDataSender.sendPunches(jsonString, "https://postman-echo.com/post"){
 //                    if (mDataSender.sendPunchesAsync(jsonString, "https://postman-echo.com/get").await()){
                     if (mDataSender.sendPunchesAsync(jsonString, mServerUrl).await()) {
-                        Log.i(TAG, "POSTED")
+                        Log.i(TAG_NETWORK, "POSTED")
                     } else {
-                        Log.i(TAG, "NOT POSTED")
+                        Log.i(TAG_NETWORK, "NOT POSTED")
                         //TODO write timer task
                     }
                 }
@@ -395,7 +400,7 @@ class TrackingService : Service(), BeaconConsumer,
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
                 )
                 mNetworkStateReceiverRegistered = true
-                Log.i(TAG, "BR. NO NETWORK CONNECTION. RECEIVER REGISTERED")
+                Log.i(TAG_NETWORK, "Network Broadcast Receiver: NO NETWORK CONNECTION. RECEIVER REGISTERED")
             }
         }
     }
@@ -404,7 +409,7 @@ class TrackingService : Service(), BeaconConsumer,
         val list =
             mDatabaseManager.actionGetPunchesByEventId(mDatabaseManager.actionGetLastEvent().id)
         val jsonArray = JSONArray()
-        var punchList = mutableListOf<Int>()
+        val punchList = mutableListOf<Int>()
 
         for (i in list) {
             if (punchList.contains(i.controlPoint)) {
@@ -439,18 +444,15 @@ class TrackingService : Service(), BeaconConsumer,
     }
 
     private fun getTimeFromService(cp: Int): Long {
-        var time = -1L
-        if (isServiceConnected) {
-            time = locationService!!.punch(cp)
-            Log.i(TAG + "REMOTE", convertLongToTime(time))
+        return if (isServiceConnected) {
+            locationService!!.punch(cp)
         } else {
-            time = mTimeManager.getTime()
+            mTimeManager.getTime()
         }
-        return time
     }
 
     private fun findPunchByControlPoint(cp: Int): Punches {
-        var punch: Punches = Punches(0, 0, 0, 0)
+        var punch = Punches(0, 0, 0, 0)
 
         for (p in mPunches) {
             if (p.controlPoint == cp) {
@@ -472,8 +474,6 @@ class TrackingService : Service(), BeaconConsumer,
     }
 
     fun stopOnClick() {
-//        mDatabaseManager.actionStopEvent(mTimeManager.getTime())
-
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
 
@@ -514,10 +514,9 @@ class TrackingService : Service(), BeaconConsumer,
         mDatabaseManager.actionUpdateEvent(event)
 
         for (p in punchList) {
-            Log.i(TAG, "PUNCH-TIME-SERVICE -------------------------")
-            Log.i(TAG, "PUNCH-TIME-SERVICE ${p.time}")
+            Log.i(TAG_BEACON, "PUNCH-TIME-SERVICE -------------------------")
             p.time += mTimeManager.getTimeDifference()
-            Log.i(TAG, "PUNCH-TIME-SERVICE ${p.time}")
+            Log.i(TAG_BEACON, "new punch time ${p.time}")
             mDatabaseManager.actionReplacePunchSimple(p)
 
             val broadcastIntent = Intent(BROADCAST_ACTION)
@@ -537,7 +536,7 @@ class TrackingService : Service(), BeaconConsumer,
                 locationServiceConnection,
                 Context.BIND_WAIVE_PRIORITY
             )
-            Log.i(TAG + "TEST", "Service started: $res")
+            Log.i(TAG, "Service started: $res")
         } catch (ex: Exception) {
             Log.e(TAG, ex.message)
         }
@@ -563,16 +562,20 @@ class TrackingService : Service(), BeaconConsumer,
                 mOGPSCenterServiceConnection,
                 Context.BIND_AUTO_CREATE
             )
-            Log.i(TAG + "TEST", "Service started: $res")
+            Log.i(TAG_OGPSCENTER, "Service started: $res")
         } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
+            Log.e(TAG_OGPSCENTER, ex.message)
         }
+    }
+
+    private fun stopOGPSCenterService() {
+        unbindService(mOGPSCenterServiceConnection)
     }
 
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
         if (isConnected) {
             sendPunches()
-            Log.i(TAG, "BR. CONNECTION ESTABLISHED. TRYING TO SEND AGAIN.")
+            Log.i(TAG_NETWORK, "Network Broadcast Receiver: CONNECTION ESTABLISHED. TRYING TO SEND AGAIN.")
         }
     }
 
