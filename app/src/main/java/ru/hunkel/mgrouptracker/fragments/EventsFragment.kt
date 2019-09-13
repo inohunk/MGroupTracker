@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_info.*
+import kotlinx.android.synthetic.main.activity_info.view.*
 import kotlinx.android.synthetic.main.event_list_item.view.*
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Event
@@ -42,6 +43,11 @@ class EventsFragment : Fragment() {
         mDatabaseManager = DatabaseManager(context!!)
 
         events = mDatabaseManager.actionGetAllEvents().toMutableList()
+        if (events.isEmpty()){
+            view.info_text_view.visibility = View.VISIBLE
+        }else{
+            view.info_text_view.visibility = View.GONE
+        }
         events.sortByDescending {
             it.id
         }
