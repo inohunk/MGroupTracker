@@ -52,6 +52,10 @@ class PunchFragment : Fragment() {
             PATTERN_HOUR_MINUTE_SECOND
         )
         val punches = dbManager.actionGetPunchesByEventId(eventId)
+        if (punches.isEmpty()){
+            view.start_time_text_view.text = "Нет отметок"
+            view.end_time_text_view.visibility = View.GONE
+        }
         mPunchRecyclerView.adapter = PunchAdapter(punches)
     }
 
