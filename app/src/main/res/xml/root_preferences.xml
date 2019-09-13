@@ -37,7 +37,7 @@
             app:title="Промежуток сканирования(секунды)"
             app:useSimpleSummaryProvider="true" />
     <EditTextPreference
-            android:icon="@drawable/ic_period"
+            android:icon="@drawable/ic_update_parameter"
             app:defaultValue="300"
             app:key="beacon_update_interval"
             app:title="Обновить время КП после(секунды)"
