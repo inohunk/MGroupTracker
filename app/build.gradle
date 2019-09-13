@@ -20,8 +20,8 @@ ext {
             applicationId "ru.hunkel.mgrouptracker"
             minSdkVersion 15
             targetSdkVersion 28
-            versionCode 1
-            versionName "1.0"
+            versionCode 2
+            versionName "0.2.0"
             testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
             multiDexEnabled true
         }
@@ -69,7 +69,6 @@ ext {
         implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.1'
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.1"
 
-
     }
 }
 
@@ -78,4 +77,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.material:material:1.1.0-alpha10'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+}
+
+android {
+    defaultConfig {
+        versionCode = 2
+        versionName = '0.2.0'
+    }
 }
