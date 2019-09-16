@@ -18,7 +18,7 @@ ext {
         compileSdkVersion 28
         defaultConfig {
             applicationId "ru.hunkel.mgrouptracker"
-            minSdkVersion 15
+            minSdkVersion 16
             targetSdkVersion 28
             versionCode 2
             versionName "0.2.0"
