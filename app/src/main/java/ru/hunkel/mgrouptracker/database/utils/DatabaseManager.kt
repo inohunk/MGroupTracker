@@ -22,10 +22,10 @@ class DatabaseManager(context: Context) {
             startTime = time
         )
         runBlocking {
-            mDb.trackingModel().addEvent(mCurrentEvent)
+            mDb.trackingModel().addEvent(event)
             mCurrentEvent = actionGetLastEvent()
         }
-        Log.i(TAG, "event ${event.id} started")
+        Log.i(TAG, "event ${mCurrentEvent.id} started")
     }
 
     fun actionUpdateEvent(event: Event) {
