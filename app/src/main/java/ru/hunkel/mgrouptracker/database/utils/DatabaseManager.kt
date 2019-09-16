@@ -23,9 +23,7 @@ class DatabaseManager(context: Context) {
         )
         runBlocking {
             mDb.trackingModel().addEvent(mCurrentEvent)
-            runBlocking {
-                mCurrentEvent = actionGetLastEvent()
-            }
+            mCurrentEvent = actionGetLastEvent()
         }
         Log.i(TAG, "event ${event.id} started")
     }
