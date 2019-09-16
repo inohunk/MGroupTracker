@@ -348,7 +348,7 @@ class TrackingService : Service(), BeaconConsumer,
                 Log.i(
                     TAG_BEACON, "Beacon $cp time updated - ${convertLongToTime(
                         time,
-                        PATTERN_FULL_DATE
+                        PATTERN_FULL_DATE_INVERSE
                     )}"
                 )
                 mPunches.remove(punch)

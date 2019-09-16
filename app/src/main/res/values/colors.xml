@@ -2,7 +2,6 @@
 <resources>
     <color name="colorPrimary">#064A91</color>
 <!--    <color name="colorPrimaryDark">#1A237E</color>-->
-    <color name="colorIcons">#1A237E</color>
     <color name="colorAccent">#FFC91F</color>
 
     //Button colors

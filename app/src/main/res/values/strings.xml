@@ -1,6 +1,3 @@
 <resources>
     <string name="app_name">MGroupTracker</string>
-    <string name="title_activity_tracking_settings">Настройки</string>
-    <string name="title_activity_host">HostActivity</string>
-    <string name="action_settings">Settings</string>
 </resources>

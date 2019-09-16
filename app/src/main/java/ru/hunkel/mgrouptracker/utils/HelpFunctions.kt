@@ -7,7 +7,7 @@ import java.util.*
 const val PATTERN_FULL_DATE = "yyyy.MM.dd HH:mm:ss"
 const val PATTERN_YEAR_MONTH_DAY = "yyyy-MM-dd"
 const val PATTERN_HOUR_MINUTE_SECOND = "HH:mm:ss"
-const val PATTERN_FULL_DATE_INVERSE = "ss:mm:HH dd.MM.yyyy"
+const val PATTERN_FULL_DATE_INVERSE = "$PATTERN_HOUR_MINUTE_SECOND dd.MM.yyyy"
 
 fun convertLongToTime(time: Long): String {
     val date = Date(time)
