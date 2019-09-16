@@ -28,6 +28,7 @@ import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
+import ru.hunkel.mgrouptracker.fragments.BROADCAST_TYPE_FIX_TIME
 import ru.hunkel.mgrouptracker.fragments.MainFragment
 import ru.hunkel.mgrouptracker.network.DataSender
 import ru.hunkel.mgrouptracker.receivers.NetworkStateReceiver
@@ -37,7 +38,6 @@ import ru.ogpscenter.ogpstracker.service.IGPSTrackerServiceRemote
 import java.util.*
 import kotlin.math.abs
 
-const val TAG_DATABASE = "Database"
 const val TAG_OGPSCENTER = "OGPSCenter"
 const val TAG_NETWORK = "Network"
 const val TAG_BEACON = "Beacon"
@@ -61,17 +61,24 @@ class TrackingService : Service(), BeaconConsumer,
         private const val LOCK_UPDATE_INTERVAL: Long = DEFAULT_LOCK_UPDATE_INTERVAL
     }
 
+    //Wakelock
     private var mWakeLock: PowerManager.WakeLock? = null
     private var mLastLockUpdateMillis: Long = 0
 
+    //Beacon
     private lateinit var mBeaconManager: BeaconManager
+
+    //Notifications
     private var mBuilder: NotificationCompat.Builder? = null
 
-    private var mTrackingState = STATE_OFF
 
+    //Database
     private lateinit var mDatabaseManager: DatabaseManager
 
+    //Base
     private var updateControlPointAfter = DEFAULT_CONTROL_POINT_UPDATE
+
+    private var mTrackingState = STATE_OFF
 
     private var mServerUrl = ""
 
@@ -193,7 +200,8 @@ class TrackingService : Service(), BeaconConsumer,
         val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
         val betweenScanPeriod =
             (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
-        mPunchUpdateState = (pm.getString("update_punch_params", "0")).toInt()
+        mPunchUpdateState =
+            (pm.getString("update_punch_params", "0"))!!.toInt()
         updateControlPointAfter =
             (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
 
@@ -353,15 +361,14 @@ class TrackingService : Service(), BeaconConsumer,
                         mDatabaseManager.actionAddPunch(newPunch)
                     }
                     PUNCH_UPDATE_STATE_REPLACE -> {
-                        mDatabaseManager.actionReplacePunch(newPunch)
+                        mDatabaseManager.actionReplacePunchSimple(newPunch)
                     }
                 }
                 sendPunches()
                 sendBroadcast(broadcastIntent)
                 createNotificationForControlPoint(cp)
-            }
-            else {
-                Log.i(TAG,"else")
+            } else {
+                Log.i(TAG, "else")
             }
         } else {
             val time = getTimeFromService(cp)
@@ -522,21 +529,27 @@ class TrackingService : Service(), BeaconConsumer,
 
         for (p in punchList) {
             Log.i(TAG_BEACON, "PUNCH-TIME-SERVICE -------------------------")
-            Log.i(TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
-                    "${p.eventId}\n" +
-                    "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n===")
+            Log.i(
+                TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
+                        "${p.eventId}\n" +
+                        "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n==="
+            )
 
             p.time += timeDelta
             Log.i(
                 TAG_BEACON,
                 "new punch time ${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}"
             )
-            Log.i(TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
-                    "${p.eventId}\n" +
-                    "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n")
+            Log.i(
+                TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
+                        "${p.eventId}\n" +
+                        "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n"
+            )
             mDatabaseManager.actionReplacePunchSimple(p)
         }
-        val broadcastIntent = Intent(BROADCAST_ACTION)
+        val broadcastIntent = Intent(BROADCAST_ACTION).apply {
+            type = BROADCAST_TYPE_FIX_TIME
+        }
         sendBroadcast(broadcastIntent)
     }
 

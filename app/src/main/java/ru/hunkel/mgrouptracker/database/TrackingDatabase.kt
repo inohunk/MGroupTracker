@@ -29,7 +29,6 @@ abstract class TrackingDatabase : RoomDatabase() {
                         "tracking-database"
                     )
                         //TODO used only for primary testing. In future rewrite all database queries with coroutines
-                        .fallbackToDestructiveMigration()
                         .allowMainThreadQueries()
                         //
                         .build()

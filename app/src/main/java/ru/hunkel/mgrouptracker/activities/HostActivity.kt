@@ -3,6 +3,8 @@ package ru.hunkel.mgrouptracker.activities
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.fragments.MainFragment
 import java.util.*
@@ -16,8 +18,7 @@ class HostActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        val fragment =
-            supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment)!!.childFragmentManager.fragments[0]
+        val fragment = getCurrentFragment(supportFragmentManager)
 
         if (fragment is MainFragment) {
             if (!MainFragment.mServiceBounded) {
@@ -37,4 +38,12 @@ class HostActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
+
+    private fun getCurrentFragment(fragmentManager: FragmentManager): Fragment? {
+        val fragment =
+            fragmentManager.findFragmentById(R.id.my_nav_host_fragment)!!.childFragmentManager.fragments[0]
+        return if (fragment == null) return fragment else null
+    }
+
+
 }

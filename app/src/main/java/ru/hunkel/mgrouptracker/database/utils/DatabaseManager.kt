@@ -2,15 +2,17 @@ package ru.hunkel.mgrouptracker.database.utils
 
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.runBlocking
 import ru.hunkel.mgrouptracker.database.TrackingDatabase
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 
+const val TAG = "DatabaseManager"
 
 class DatabaseManager(context: Context) {
+
     private var mDb = TrackingDatabase.getInstance(context)
-    private val TAG = "DB-Manager"
 
     private var mCurrentEvent: Event = Event()
 
@@ -19,37 +21,33 @@ class DatabaseManager(context: Context) {
         val event = Event(
             startTime = time
         )
-        Log.i(TAG, "event started")
-        mCurrentEvent = event
-        Log.i(
-            TAG,
-            "EVENT INFO:\n\t" +
-                    "id: ${event.id}\n\t" +
-                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
-                    "end time: ${convertLongToTime(event.endTime)}\n"
-        )
-        mDb.trackingModel().addEvent(mCurrentEvent)
+        runBlocking {
+            mDb.trackingModel().addEvent(mCurrentEvent)
+            runBlocking {
+                mCurrentEvent = actionGetLastEvent()
+            }
+        }
+        Log.i(TAG, "event ${event.id} started")
     }
 
     fun actionUpdateEvent(event: Event) {
         mDb.trackingModel().updateEvent(event)
+        Log.i(TAG, "Event ${event.id} updated")
     }
 
     fun actionStopEvent(time: Long) {
-        val event = mDb.trackingModel().getLastEvent()
+        val event = actionGetLastEvent()
         event.endTime = time
         mDb.trackingModel().updateEvent(event)
-        Log.i(TAG, "event stopped")
-        actionGetLastEvent()
-
+        Log.i(TAG, "event ${event.id} stopped")
     }
 
     fun actionGetLastEvent(): Event {
         val event = mDb.trackingModel().getLastEvent()
-
         Log.i(
             TAG,
-            "EVENT INFO:\n\t" +
+            "Get last event:\n" +
+                    "EVENT INFO:\n\t" +
                     "id: ${event.id}\n\t" +
                     "start time: ${convertLongToTime(event.startTime)}\n\t" +
                     "end time: ${convertLongToTime(event.endTime)}\n"
@@ -68,6 +66,7 @@ class DatabaseManager(context: Context) {
     }
 
     fun actionDeleteEvent(event: Event) {
+        mDb.trackingModel().deleteEvent(event)
         Log.i(
             TAG,
             "REMOVED EVENT INFO:\n\t" +
@@ -75,7 +74,6 @@ class DatabaseManager(context: Context) {
                     "start time: ${convertLongToTime(event.startTime)}\n\t" +
                     "end time: ${convertLongToTime(event.endTime)}\n"
         )
-        mDb.trackingModel().deleteEvent(event)
     }
 
     fun actionGetEventById(id: Int): Event {
@@ -89,7 +87,7 @@ class DatabaseManager(context: Context) {
 
         Log.i(
             TAG,
-            "\nAdding punch:\n" +
+            "\nAdded punch:\n" +
                     "id: ${lastPunch.id}\n" +
                     "event id: ${lastPunch.eventId}\n" +
                     "control point: ${lastPunch.controlPoint}\n" +

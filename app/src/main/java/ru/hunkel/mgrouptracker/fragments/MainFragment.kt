@@ -7,13 +7,14 @@ import android.app.Activity.RESULT_OK
 import android.bluetooth.BluetoothAdapter
 import android.content.*
 import android.content.pm.PackageManager
+import android.net.Uri.fromParts
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -36,8 +37,9 @@ import java.util.*
 import kotlin.math.abs
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
+const val BROADCAST_TYPE_FIX_TIME = "Time fixing"
+
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
-const val TAG = "MainFragment"
 
 const val REQUEST_GPS = 1
 const val REQUEST_BLUETOOTH = 2
@@ -50,9 +52,9 @@ class MainFragment : Fragment() {
         var mServiceBounded = false
     }
 
-    var mTrackingService: ITrackingService? = null
+    private var mTrackingService: ITrackingService? = null
 
-    lateinit var mDbManager: DatabaseManager
+    private lateinit var mDbManager: DatabaseManager
 
     private lateinit var mPunchRecyclerView: RecyclerView
 
@@ -85,7 +87,6 @@ class MainFragment : Fragment() {
         return view
     }
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         start_event_button.background =
             EventDrawable(ContextCompat.getColor(context!!, R.color.color_start_button))
@@ -103,22 +104,23 @@ class MainFragment : Fragment() {
 
         mPunchRecyclerView = punch_recycler_view
         mPunchRecyclerView.layoutManager = LinearLayoutManager(context!!)
-        mDbManager = DatabaseManager(context!!)
+        mPunchRecyclerView.adapter = PunchAdapter(mutableListOf())
 
-        try {
-            mPunchRecyclerView.adapter = PunchAdapter(mutableListOf())
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
-        }
+        mDbManager = DatabaseManager(context!!)
 
         mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val list = mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
+                //TODO optimize list updating
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
-                start_time_text_view.text = convertLongToTime(
-                    mDbManager.actionGetLastEvent().startTime,
-                    PATTERN_HOUR_MINUTE_SECOND
-                )
+                when (intent!!.type) {
+                    BROADCAST_TYPE_FIX_TIME -> {
+                        start_time_text_view.text = convertLongToTime(
+                            mDbManager.actionGetLastEvent().startTime,
+                            PATTERN_HOUR_MINUTE_SECOND
+                        )
+                    }
+                }
             }
         }
         context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
@@ -132,27 +134,27 @@ class MainFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.settings_button -> {
-                if (mServiceBounded.not()) {
-                    findNavController().navigate(MainFragmentDirections.actionGoToSettings())
-                } else {
+                if (mServiceBounded) {
                     Toast.makeText(
                         context,
                         "Нельзя открыть настройки во время соревнования.",
                         Toast.LENGTH_SHORT
                     )
                         .show()
+                } else {
+                    findNavController().navigate(MainFragmentDirections.actionGoToSettings())
                 }
             }
             R.id.info_button -> {
-                if (mServiceBounded.not()) {
-                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
-                } else {
+                if (mServiceBounded) {
                     Toast.makeText(
                         context,
                         "Нельзя открыть во время соревнования.",
                         Toast.LENGTH_SHORT
                     )
                         .show()
+                } else {
+                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
                 }
             }
         }
@@ -168,11 +170,13 @@ class MainFragment : Fragment() {
     }
 
     private fun stopServiceOnClick() {
-        end_time_text_view.text = convertLongToTime(
-            mTrackingService!!.stopEvent(),
-            PATTERN_HOUR_MINUTE_SECOND
-        )
-        end_time_text_view.visibility = View.VISIBLE
+        end_time_text_view.apply {
+            text = convertLongToTime(
+                mTrackingService!!.stopEvent(),
+                PATTERN_HOUR_MINUTE_SECOND
+            )
+            visibility = View.GONE
+        }
         context!!.unbindService(mTrackingServiceConnection)
         context!!.stopService(Intent(context, TrackingService::class.java))
         updateUIWithCurrentState(false)
@@ -200,29 +204,23 @@ class MainFragment : Fragment() {
                         permission
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
+                    Toast.makeText(
+                        context,
+                        "Разрешение на местоположение необходимо для записи ваших треков",
+                        Toast.LENGTH_LONG
+                    ).show()
                     if ((shouldShowRequestPermissionRationale(permission))) {
-                        Toast.makeText(
-                            context,
-                            "Разрешение на местоположение необходимо для записи ваших треков",
-                            Toast.LENGTH_LONG
-                        ).show()
                         requestPermissions(permissions, requestCode)
                     } else {
-                        Toast.makeText(
-                            context,
-                            "Разрешение на местоположение необходимо для записи ваших треков",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        val intent = Intent()
+                        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
 
-//                        val intent = Intent()
-//                        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
-//
-//                        val uri = fromParts("package", context!!.packageName, null)
-//                        intent.data = uri
+                        val uri = fromParts("package", context!!.packageName, null)
+                        intent.data = uri
 
-//                        startActivity(intent)
-                        requestPermissions(permissions, requestCode)
+                        startActivity(intent)
                     }
+
                 } else {
                     mGpsPermissionAccepted = true
                     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -289,17 +287,19 @@ class MainFragment : Fragment() {
         ) {
             val serviceIntent =
                 Intent(context, TrackingService::class.java)
-            context!!.startService(serviceIntent)
-            context!!.bindService(
-                serviceIntent,
-                mTrackingServiceConnection,
-                Context.BIND_WAIVE_PRIORITY
-            )
-            end_time_text_view.visibility = View.GONE
+            context!!.apply {
+                startService(serviceIntent)
+                bindService(
+                    serviceIntent,
+                    mTrackingServiceConnection,
+                    Context.BIND_WAIVE_PRIORITY
+                )
+            }
             start_time_text_view.text = convertLongToTime(
                 System.currentTimeMillis(),
                 PATTERN_HOUR_MINUTE_SECOND
             )
+            end_time_text_view.visibility = View.GONE
             start_time_text_view.visibility = View.VISIBLE
             updateUIWithCurrentState(true)
             mServiceBounded = true
