@@ -175,7 +175,7 @@ class MainFragment : Fragment() {
                 mTrackingService!!.stopEvent(),
                 PATTERN_HOUR_MINUTE_SECOND
             )
-            visibility = View.GONE
+            visibility = View.VISIBLE
         }
         context!!.unbindService(mTrackingServiceConnection)
         context!!.stopService(Intent(context, TrackingService::class.java))
