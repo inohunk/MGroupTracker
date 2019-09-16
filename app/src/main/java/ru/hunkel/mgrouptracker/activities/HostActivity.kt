@@ -42,7 +42,7 @@ class HostActivity : AppCompatActivity() {
     private fun getCurrentFragment(fragmentManager: FragmentManager): Fragment? {
         val fragment =
             fragmentManager.findFragmentById(R.id.my_nav_host_fragment)!!.childFragmentManager.fragments[0]
-        return if (fragment == null) return fragment else null
+        return fragment ?: return null
     }
 
 
