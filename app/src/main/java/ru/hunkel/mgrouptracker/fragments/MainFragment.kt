@@ -117,18 +117,21 @@ class MainFragment : Fragment() {
                 //TODO optimize list updating
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
 
-                val type = intent?.getIntExtra(BROADCAST_TYPE, -1)
-
-                when (type) {
-                    BROADCAST_TYPE_FIX_TIME -> {
-                        start_time_text_view.text = convertLongToTime(
-                            mDbManager.actionGetLastEvent().startTime,
-                            PATTERN_HOUR_MINUTE_SECOND
-                        )
+                try {
+                    val type = intent?.getIntExtra(BROADCAST_TYPE, -1)
+                    when (type) {
+                        BROADCAST_TYPE_FIX_TIME -> {
+                            start_time_text_view.text = convertLongToTime(
+                                mDbManager.actionGetLastEvent().startTime,
+                                PATTERN_HOUR_MINUTE_SECOND
+                            )
+                        }
+                        BROADCAST_TYPE_STOP_EVENT -> {
+                            stopServiceOnClick()
+                        }
                     }
-                    BROADCAST_TYPE_STOP_EVENT -> {
-                        stopServiceOnClick()
-                    }
+                } catch (ex: Exception) {
+                    Log.e(TAG, ex.message)
                 }
             }
         }
