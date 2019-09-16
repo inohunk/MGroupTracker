@@ -115,9 +115,12 @@ class MainFragment : Fragment() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val list = mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
+                start_time_text_view.text = convertLongToTime(
+                    mDbManager.actionGetLastEvent().startTime,
+                    PATTERN_HOUR_MINUTE_SECOND
+                )
             }
         }
-
         context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
     }
 
@@ -292,6 +295,7 @@ class MainFragment : Fragment() {
                 mTrackingServiceConnection,
                 Context.BIND_WAIVE_PRIORITY
             )
+            end_time_text_view.visibility = View.GONE
             start_time_text_view.text = convertLongToTime(
                 System.currentTimeMillis(),
                 PATTERN_HOUR_MINUTE_SECOND

@@ -10,28 +10,37 @@ import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
-import kotlin.math.abs
 
-abstract class TimeManager(private val context: Context) : LocationListener {
+const val TAG_TIME_MANAGER = "TimeManager"
+
+class TimeManager(private val context: Context) : LocationListener {
     private var mTime = 0L
     private var mDeltaTime = 0L
+
+    interface TimeChangedListener {
+        fun onTimeChaned(time: Long)
+    }
+
+    companion object {
+        var sTimeChangedListener: TimeChangedListener? = null
+    }
 
     //Location
     private var mLocationManager: LocationManager? = null
 
     init {
-        Log.i("TTT", "init")
+        Log.i(TAG_TIME_MANAGER, "init")
         getTimeFromGPS()
     }
 
     fun getTime(): Long {
         mTime = getTimeFromSystem() + mDeltaTime
-        Log.i("TTT", "getTime called")
+        Log.i(TAG_TIME_MANAGER, "getTime called")
         return mTime
     }
 
     fun getTimeDifference(): Long {
-        Log.i("TTT", "getTimeDifference called")
+        Log.i(TAG_TIME_MANAGER, "getTimeDifference called")
         return mDeltaTime
     }
 
@@ -45,23 +54,27 @@ abstract class TimeManager(private val context: Context) : LocationListener {
         ) {
             //TODO do something  if app don't have permissions
         } else {
-            mLocationManager!!.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, Looper.getMainLooper())
+            mLocationManager!!.requestSingleUpdate(
+                LocationManager.GPS_PROVIDER,
+                this,
+                Looper.getMainLooper()
+            )
         }
-        Log.i("TTT", "getTimeFromGPS called")
+        Log.i(TAG_TIME_MANAGER, "getTimeFromGPS called")
 
     }
-
-    abstract fun onGpsTimeReceived(time: Long)
 
     private fun getTimeFromSystem(): Long {
         return System.currentTimeMillis()
     }
 
     override fun onLocationChanged(location: Location?) {
-        mDeltaTime = abs(mTime - location!!.time)
+        mDeltaTime = location!!.time - System.currentTimeMillis()
         mTime = location.time
-        onGpsTimeReceived(mTime)
-        Log.i("TTT", "onLocationChanged")
+        if (sTimeChangedListener != null) {
+            sTimeChangedListener!!.onTimeChaned(mTime)
+        }
+        Log.i(TAG_TIME_MANAGER, "onLocationChanged")
     }
 
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {

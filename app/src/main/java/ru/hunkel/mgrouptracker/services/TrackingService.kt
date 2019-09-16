@@ -43,13 +43,13 @@ const val TAG_NETWORK = "Network"
 const val TAG_BEACON = "Beacon"
 
 class TrackingService : Service(), BeaconConsumer,
-    NetworkStateReceiver.NetworkStateReceiverListener {
+    NetworkStateReceiver.NetworkStateReceiverListener,
+    TimeManager.TimeChangedListener {
 
     /*
         VARIABLES
     */
     companion object {
-        //TAG's
         private const val TAG = "TrackingService"
         private const val WAKE_LOCK_TAG = "PunchingApp:WakeLockTag"
 
@@ -84,7 +84,7 @@ class TrackingService : Service(), BeaconConsumer,
     private var mPunchUpdateState = PUNCH_UPDATE_STATE_ADD
 
     //Objects
-    private lateinit var mTimeManager: TimeManagerNew
+    private lateinit var mTimeManager: TimeManager
     private val mDataSender = DataSender()
 
     //LOCATION SERVICE
@@ -157,20 +157,19 @@ class TrackingService : Service(), BeaconConsumer,
         }
     }
 
-    private inner class TimeManagerNew(context: Context) : TimeManager(context) {
-        override fun onGpsTimeReceived(time: Long) {
-            fixTimeInDatabase(mTimeManager.getTime())
-            mTimeSynchronized = true
-        }
+    override fun onTimeChaned(time: Long) {
+        fixTimeInDatabase()
+        mTimeSynchronized = true
     }
-
     /*
         Override functions
     */
 
     override fun onCreate() {
+        mTimeManager = TimeManager(this)
+        TimeManager.sTimeChangedListener = this
         mDatabaseManager = DatabaseManager(this)
-        mTimeManager = TimeManagerNew(this)
+
         initBeaconManager()
         startOnClick()
         startLocationService()
@@ -323,6 +322,7 @@ class TrackingService : Service(), BeaconConsumer,
 
 
     private fun checkInList(cp: Int) {
+        //TODO if checking fix
         val newPunch = Punches(
             eventId = mDatabaseManager.actionGetLastEvent().id,
             time = mTimeManager.getTime(),
@@ -359,6 +359,9 @@ class TrackingService : Service(), BeaconConsumer,
                 sendPunches()
                 sendBroadcast(broadcastIntent)
                 createNotificationForControlPoint(cp)
+            }
+            else {
+                Log.i(TAG,"else")
             }
         } else {
             val time = getTimeFromService(cp)
@@ -400,7 +403,10 @@ class TrackingService : Service(), BeaconConsumer,
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
                 )
                 mNetworkStateReceiverRegistered = true
-                Log.i(TAG_NETWORK, "Network Broadcast Receiver: NO NETWORK CONNECTION. RECEIVER REGISTERED")
+                Log.i(
+                    TAG_NETWORK,
+                    "Network Broadcast Receiver: NO NETWORK CONNECTION. RECEIVER REGISTERED"
+                )
             }
         }
     }
@@ -507,21 +513,31 @@ class TrackingService : Service(), BeaconConsumer,
         }
     }
 
-    private fun fixTimeInDatabase(time: Long) {
-        val punchList = mDatabaseManager.actionGetPunchesBeforeCertainTime(time)
+    private fun fixTimeInDatabase() {
         val event = mDatabaseManager.actionGetLastEvent()
-        event.startTime += mTimeManager.getTimeDifference()
+        val punchList = mDatabaseManager.actionGetPunchesByEventId(event.id)
+        val timeDelta = mTimeManager.getTimeDifference()
+        event.startTime += timeDelta
         mDatabaseManager.actionUpdateEvent(event)
 
         for (p in punchList) {
             Log.i(TAG_BEACON, "PUNCH-TIME-SERVICE -------------------------")
-            p.time += mTimeManager.getTimeDifference()
-            Log.i(TAG_BEACON, "new punch time ${p.time}")
-            mDatabaseManager.actionReplacePunchSimple(p)
+            Log.i(TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
+                    "${p.eventId}\n" +
+                    "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n===")
 
-            val broadcastIntent = Intent(BROADCAST_ACTION)
-            sendBroadcast(broadcastIntent)
+            p.time += timeDelta
+            Log.i(
+                TAG_BEACON,
+                "new punch time ${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}"
+            )
+            Log.i(TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
+                    "${p.eventId}\n" +
+                    "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n")
+            mDatabaseManager.actionReplacePunchSimple(p)
         }
+        val broadcastIntent = Intent(BROADCAST_ACTION)
+        sendBroadcast(broadcastIntent)
     }
 
     private fun startLocationService() {
@@ -575,7 +591,10 @@ class TrackingService : Service(), BeaconConsumer,
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
         if (isConnected) {
             sendPunches()
-            Log.i(TAG_NETWORK, "Network Broadcast Receiver: CONNECTION ESTABLISHED. TRYING TO SEND AGAIN.")
+            Log.i(
+                TAG_NETWORK,
+                "Network Broadcast Receiver: CONNECTION ESTABLISHED. TRYING TO SEND AGAIN."
+            )
         }
     }
 
