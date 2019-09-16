@@ -14,10 +14,8 @@
   ~ limitations under the License.
   -->
 
-<androidx.preference.PreferenceScreen
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        >
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
     <EditTextPreference
             android:icon="@drawable/ic_distance"
             app:defaultValue="3"
@@ -50,4 +48,18 @@
             android:key="update_punch_params"
             android:title="Параметры обновления метки"
             app:useSimpleSummaryProvider="true" />
+    <PreferenceCategory android:title="Настройка старта/финиша по маячку">
+        <EditTextPreference
+                android:icon="@drawable/ic_start"
+                app:defaultValue="100"
+                app:key="beacon_start"
+                app:title="Стартовый маячок"
+                app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+                android:icon="@drawable/ic_stop"
+                app:defaultValue="101"
+                app:key="beacon_stop"
+                app:title="Финишный маячок"
+                app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>
