@@ -37,7 +37,10 @@ import java.util.*
 import kotlin.math.abs
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
-const val BROADCAST_TYPE_FIX_TIME = "Time fixing"
+
+const val BROADCAST_TYPE = "type"
+const val BROADCAST_TYPE_STOP_EVENT = 0
+const val BROADCAST_TYPE_FIX_TIME = 1
 
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 
@@ -113,12 +116,18 @@ class MainFragment : Fragment() {
                 val list = mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
                 //TODO optimize list updating
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
-                when (intent!!.type) {
+
+                val type = intent?.getIntExtra(BROADCAST_TYPE, -1)
+
+                when (type) {
                     BROADCAST_TYPE_FIX_TIME -> {
                         start_time_text_view.text = convertLongToTime(
                             mDbManager.actionGetLastEvent().startTime,
                             PATTERN_HOUR_MINUTE_SECOND
                         )
+                    }
+                    BROADCAST_TYPE_STOP_EVENT -> {
+                        stopServiceOnClick()
                     }
                 }
             }

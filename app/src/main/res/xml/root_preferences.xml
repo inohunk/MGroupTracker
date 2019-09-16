@@ -49,17 +49,25 @@
             android:title="Параметры обновления метки"
             app:useSimpleSummaryProvider="true" />
     <PreferenceCategory android:title="Настройка старта/финиша по маячку">
+        <CheckBoxPreference
+                app:defaultValue="true"
+                app:key="beacon_auto_start_finish"
+                app:title="Включить/выключить" />
         <EditTextPreference
                 android:icon="@drawable/ic_start"
                 app:defaultValue="100"
                 app:key="beacon_start"
                 app:title="Стартовый маячок"
-                app:useSimpleSummaryProvider="true" />
+                app:useSimpleSummaryProvider="true"
+                android:dependency="beacon_auto_start_finish"
+                />
         <EditTextPreference
                 android:icon="@drawable/ic_stop"
                 app:defaultValue="101"
-                app:key="beacon_stop"
+                app:key="beacon_finish"
                 app:title="Финишный маячок"
-                app:useSimpleSummaryProvider="true" />
+                app:useSimpleSummaryProvider="true"
+                android:dependency="beacon_auto_start_finish"
+                />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

@@ -27,9 +27,7 @@ import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
-import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
-import ru.hunkel.mgrouptracker.fragments.BROADCAST_TYPE_FIX_TIME
-import ru.hunkel.mgrouptracker.fragments.MainFragment
+import ru.hunkel.mgrouptracker.fragments.*
 import ru.hunkel.mgrouptracker.network.DataSender
 import ru.hunkel.mgrouptracker.receivers.NetworkStateReceiver
 import ru.hunkel.mgrouptracker.utils.*
@@ -84,6 +82,18 @@ class TrackingService : Service(), BeaconConsumer,
 
     private var mTimeSynchronized = false
 
+    private var mAutoStartFinish = false
+
+    private var mStartChecked = false
+
+    private var mFinishChecked = false
+
+    private var mStartControlPoint = 100
+
+    private var mFinishControlPoint = 101
+
+    private var mBeaconDistance = 3F
+
     //Collections
     private val mPunchesIdentifiers = LinkedList<Int>()
     private val mPunches = LinkedList<Punches>()
@@ -93,6 +103,47 @@ class TrackingService : Service(), BeaconConsumer,
     //Objects
     private lateinit var mTimeManager: TimeManager
     private val mDataSender = DataSender()
+
+    private val mEventControlPointFinder = RangeNotifier { beacons, _ ->
+        updateWakeLock()
+        if (beacons.isNotEmpty()) {
+            val iterator = beacons.iterator()
+
+            while (iterator.hasNext()) {
+                val beacon = iterator.next()
+                if (beacon.distance <= mBeaconDistance) {
+                    checkInList(beacon.id3.toInt())
+                }
+                Log.i(
+                    TAG_BEACON, "FOUNDED BEACON:\n" +
+                            "\tid1: ${beacon.id1}\n" +
+                            "\tid2: ${beacon.id2}\n" +
+                            "\tid3: ${beacon.id3}\n" +
+                            "\tmanufacturer: ${beacon.manufacturer}\n" +
+                            "\ttxPower: ${beacon.txPower}\n" +
+                            "\trssi: ${beacon.rssi}\n" +
+                            "\tdistance: ${beacon.distance}\n"
+                )
+            }
+        }
+    }
+
+    private val mStartControlPointFinder = RangeNotifier { beacons, _ ->
+        updateWakeLock()
+        if (beacons.isNotEmpty()) {
+            val iterator = beacons.iterator()
+
+            while (iterator.hasNext()) {
+                val beacon = iterator.next()
+                if (beacon.distance <= mBeaconDistance) {
+                    if (beacon.id3.toInt() == mStartControlPoint) {
+                        mBeaconManager.addRangeNotifier(mEventControlPointFinder)
+                        mStartChecked = true
+                    }
+                }
+            }
+        }
+    }
 
     //LOCATION SERVICE
     var locationService: ILocationService? = null
@@ -173,6 +224,9 @@ class TrackingService : Service(), BeaconConsumer,
     */
 
     override fun onCreate() {
+        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+        mAutoStartFinish = pm.getBoolean("beacon_auto_start_finish", false)
+
         mTimeManager = TimeManager(this)
         TimeManager.sTimeChangedListener = this
         mDatabaseManager = DatabaseManager(this)
@@ -196,7 +250,7 @@ class TrackingService : Service(), BeaconConsumer,
 
         val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
 
-        val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
+        mBeaconDistance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
         val betweenScanPeriod =
             (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
@@ -205,36 +259,21 @@ class TrackingService : Service(), BeaconConsumer,
         updateControlPointAfter =
             (pm.getString("beacon_update_interval", "10")!!.toFloat() * 1000).toLong()
 
+        mStartControlPoint =
+            (pm.getString("beacon_start", "100")).toInt()
+        mFinishControlPoint =
+            (pm.getString("beacon_finish", "101")).toInt()
+
         mBeaconManager.foregroundScanPeriod = scanPeriod
         mBeaconManager.backgroundBetweenScanPeriod = betweenScanPeriod
         mBeaconManager.backgroundScanPeriod = scanPeriod
         mBeaconManager.foregroundBetweenScanPeriod = betweenScanPeriod
         mBeaconManager.applySettings()
 
-        mBeaconManager.addRangeNotifier { beacons, _ ->
-
-            updateWakeLock()
-            if (beacons.isNotEmpty()) {
-                val iterator = beacons.iterator()
-
-                while (iterator.hasNext()) {
-                    val beacon = iterator.next()
-                    if (beacon.distance <= distance) {
-                        checkInList(beacon.id3.toInt())
-                    }
-                    Log.i(
-                        TAG_BEACON, "FOUNDED BEACON:\n" +
-                                "\tid1: ${beacon.id1}\n" +
-                                "\tid2: ${beacon.id2}\n" +
-                                "\tid3: ${beacon.id3}\n" +
-                                "\tmanufacturer: ${beacon.manufacturer}\n" +
-                                "\ttxPower: ${beacon.txPower}\n" +
-                                "\trssi: ${beacon.rssi}\n" +
-                                "\tdistance: ${beacon.distance}\n"
-                    )
-                }
-
-            }
+        if (mAutoStartFinish) {
+            mBeaconManager.addRangeNotifier(mStartControlPointFinder)
+        } else {
+            mBeaconManager.addRangeNotifier(mEventControlPointFinder)
         }
 
         try {
@@ -326,6 +365,19 @@ class TrackingService : Service(), BeaconConsumer,
 
 
     private fun checkInList(cp: Int) {
+        if (mFinishChecked) return
+        if (cp == mStartControlPoint && mAutoStartFinish && mStartChecked) {
+            return
+        }
+
+        if ((cp == mFinishControlPoint) && mAutoStartFinish && mStartChecked) {
+            val broadcastIntent = Intent(BROADCAST_ACTION)
+            broadcastIntent.putExtra(BROADCAST_TYPE, BROADCAST_TYPE_STOP_EVENT)
+            sendBroadcast(broadcastIntent)
+            mFinishChecked = true
+            return
+        }
+
         //TODO if checking fix
         val newPunch = Punches(
             eventId = mDatabaseManager.actionGetLastEvent().id,
@@ -543,9 +595,8 @@ class TrackingService : Service(), BeaconConsumer,
             )
             mDatabaseManager.actionReplacePunchSimple(p)
         }
-        val broadcastIntent = Intent(BROADCAST_ACTION).apply {
-            type = BROADCAST_TYPE_FIX_TIME
-        }
+        val broadcastIntent = Intent(BROADCAST_ACTION)
+        broadcastIntent.putExtra(BROADCAST_TYPE,BROADCAST_TYPE_FIX_TIME)
         sendBroadcast(broadcastIntent)
     }
 
