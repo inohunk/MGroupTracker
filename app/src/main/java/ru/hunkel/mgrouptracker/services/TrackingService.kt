@@ -285,15 +285,11 @@ class TrackingService : Service(), BeaconConsumer,
             notificationManager.createNotificationChannel(channel)
             mBuilder!!.setChannelId(channel.id)
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            mBeaconManager.enableForegroundServiceScanning(
-                mBuilder!!.build(),
-                NOTIFICATION_STATE_ID
-            )
-        } else {
-            notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
-        }
+        mBeaconManager.enableForegroundServiceScanning(
+            mBuilder!!.build(),
+            NOTIFICATION_STATE_ID
+        )
+        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
     }
 
 
