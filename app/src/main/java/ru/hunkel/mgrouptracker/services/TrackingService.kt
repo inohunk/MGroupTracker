@@ -415,6 +415,8 @@ class TrackingService : Service(), BeaconConsumer,
                     "Network Broadcast Receiver: NO NETWORK CONNECTION. RECEIVER REGISTERED"
                 )
             }
+        }else if (mTimeSynchronized.not()){
+            //TODO do some if time not sync yet
         }
     }
 
