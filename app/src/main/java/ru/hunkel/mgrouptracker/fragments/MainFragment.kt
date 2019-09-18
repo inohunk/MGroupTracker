@@ -41,6 +41,7 @@ const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 const val BROADCAST_TYPE = "type"
 const val BROADCAST_TYPE_STOP_EVENT = 0
 const val BROADCAST_TYPE_FIX_TIME = 1
+const val BROADCAST_TYPE_START_EVENT = 2
 
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 
@@ -60,6 +61,8 @@ class MainFragment : Fragment() {
     private lateinit var mDbManager: DatabaseManager
 
     private lateinit var mPunchRecyclerView: RecyclerView
+
+    private lateinit var mPunchAdapter: PunchAdapter
 
     private lateinit var mBroadcastReceiver: BroadcastReceiver
 
@@ -108,7 +111,7 @@ class MainFragment : Fragment() {
         mPunchRecyclerView = punch_recycler_view
         mPunchRecyclerView.layoutManager = LinearLayoutManager(context!!)
         mPunchRecyclerView.adapter = PunchAdapter(mutableListOf())
-
+        mPunchAdapter = mPunchRecyclerView.adapter as PunchAdapter
         mDbManager = DatabaseManager(context!!)
 
         mBroadcastReceiver = object : BroadcastReceiver() {
@@ -128,6 +131,15 @@ class MainFragment : Fragment() {
                         }
                         BROADCAST_TYPE_STOP_EVENT -> {
                             stopServiceOnClick()
+                        }
+                        BROADCAST_TYPE_START_EVENT -> {
+                            start_time_text_view.apply {
+                                text = convertLongToTime(
+                                    mDbManager.actionGetLastEvent().startTime,
+                                    PATTERN_HOUR_MINUTE_SECOND
+                                )
+                                visibility = View.VISIBLE
+                            }
                         }
                     }
                 } catch (ex: Exception) {
@@ -307,11 +319,13 @@ class MainFragment : Fragment() {
                     Context.BIND_WAIVE_PRIORITY
                 )
             }
-            start_time_text_view.text = convertLongToTime(
+
+            /*start_time_text_view.text = convertLongToTime(
                 System.currentTimeMillis(),
                 PATTERN_HOUR_MINUTE_SECOND
             )
-            start_time_text_view.visibility = View.VISIBLE
+            */
+            start_time_text_view.visibility = View.GONE
             end_time_text_view.visibility = View.GONE
             updateUIWithCurrentState(true)
             mServiceBounded = true

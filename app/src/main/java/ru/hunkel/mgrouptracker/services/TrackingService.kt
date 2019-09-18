@@ -137,6 +137,11 @@ class TrackingService : Service(), BeaconConsumer,
                 val beacon = iterator.next()
                 if (beacon.distance <= mBeaconDistance) {
                     if (beacon.id3.toInt() == mStartControlPoint) {
+                        mDatabaseManager.actionStartEvent(mTimeManager.getTime())
+                        val intent = Intent(BROADCAST_ACTION)
+                        intent.putExtra(BROADCAST_TYPE, BROADCAST_TYPE_START_EVENT)
+                        sendBroadcast(intent)
+                        mBeaconManager.removeAllRangeNotifiers()
                         mBeaconManager.addRangeNotifier(mEventControlPointFinder)
                         mStartChecked = true
                     }
@@ -578,7 +583,7 @@ class TrackingService : Service(), BeaconConsumer,
         for (p in punchList) {
             Log.i(TAG_BEACON, "PUNCH-TIME-SERVICE -------------------------")
             Log.i(
-                TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
+                TAG_BEACON, "PUNCH-TIME\n${p.id}\n" +
                         "${p.eventId}\n" +
                         "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n==="
             )
@@ -596,7 +601,7 @@ class TrackingService : Service(), BeaconConsumer,
             mDatabaseManager.actionReplacePunchSimple(p)
         }
         val broadcastIntent = Intent(BROADCAST_ACTION)
-        broadcastIntent.putExtra(BROADCAST_TYPE,BROADCAST_TYPE_FIX_TIME)
+        broadcastIntent.putExtra(BROADCAST_TYPE, BROADCAST_TYPE_FIX_TIME)
         sendBroadcast(broadcastIntent)
     }
 
