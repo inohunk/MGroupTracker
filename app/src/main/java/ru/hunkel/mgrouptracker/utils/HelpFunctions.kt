@@ -20,3 +20,10 @@ fun convertLongToTime(time: Long, pattern: String): String {
     val format = SimpleDateFormat(pattern)
     return format.format(date)
 }
+
+fun convertLongToTime(time:Long, pattern: String, timeZone: TimeZone): String {
+    val data = Date(time)
+    val format = SimpleDateFormat(pattern)
+    format.timeZone = timeZone
+    return format.format(data)
+}

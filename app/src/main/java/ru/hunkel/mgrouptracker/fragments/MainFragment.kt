@@ -154,7 +154,12 @@ class MainFragment : Fragment() {
                     )
                         .show()
                 } else {
-                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
+//                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
+                    val fragment = ResultDialog(
+                        mDbManager.actionGetLastEvent(),
+                        mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
+                    )
+                    fragment.show(fragmentManager!!,"missiles")
                 }
             }
         }
