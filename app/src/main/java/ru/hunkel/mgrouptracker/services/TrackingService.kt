@@ -415,7 +415,7 @@ class TrackingService : Service(), BeaconConsumer,
                     "Network Broadcast Receiver: NO NETWORK CONNECTION. RECEIVER REGISTERED"
                 )
             }
-        }else if (mTimeSynchronized.not()){
+        } else if (mTimeSynchronized.not()) {
             //TODO do some if time not sync yet
         }
     }
@@ -525,7 +525,7 @@ class TrackingService : Service(), BeaconConsumer,
     private fun fixTimeInDatabase() {
         val event = mDatabaseManager.actionGetLastEvent()
         val punchList = mDatabaseManager.actionGetPunchesByEventId(event.id)
-        val timeDelta = mTimeManager.getTimeDifference()
+        val timeDelta = mTimeManager.getTimeDelta()
         event.startTime += timeDelta
         mDatabaseManager.actionUpdateEvent(event)
 

@@ -17,6 +17,8 @@ class TimeManager(private val context: Context) : LocationListener {
     private var mTime = 0L
     private var mDeltaTime = 0L
 
+    private var MILLIS_IN_DAY = 1000 * 60 * 60 * 24
+
     interface TimeChangedListener {
         fun onTimeChaned(time: Long)
     }
@@ -39,8 +41,8 @@ class TimeManager(private val context: Context) : LocationListener {
         return mTime
     }
 
-    fun getTimeDifference(): Long {
-        Log.i(TAG_TIME_MANAGER, "getTimeDifference called")
+    fun getTimeDelta(): Long {
+        Log.i(TAG_TIME_MANAGER, "getTimeDelta called")
         return mDeltaTime
     }
 
