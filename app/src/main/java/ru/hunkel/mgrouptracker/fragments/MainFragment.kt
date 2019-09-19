@@ -142,7 +142,7 @@ class MainFragment : Fragment() {
                     )
                         .show()
                 } else {
-                    findNavController().navigate(MainFragmentDirections.actionGoToSettings())
+                    findNavController().navigate(MainFragmentDirections.actionGoToSettingsActivity())
                 }
             }
             R.id.info_button -> {
