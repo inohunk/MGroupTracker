@@ -131,6 +131,7 @@ class TrackingService : Service(), BeaconConsumer,
             try {
                 mServerUrl = mGpsService!!.punchesUploadUrl
                 Log.i(TAG_OGPSCENTER, "ogps url: " + mGpsService!!.punchesUploadUrl)
+                mServerUrlGetted = true
 
             } catch (ex: Exception) {
                 mServerUrlGetted = false
@@ -394,7 +395,8 @@ class TrackingService : Service(), BeaconConsumer,
     }
 
     private fun sendPunches() {
-        if (isConnected() and mTimeSynchronized) {
+        //TODO check server url for availability
+        if (isConnected() and mTimeSynchronized and mServerUrlGetted) {
             val jsonString = createJsonByPunchList()
 
             if (mServerUrl != "") {
