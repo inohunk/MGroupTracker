@@ -100,6 +100,14 @@ class MainFragment : Fragment() {
         stop_event_button.setOnClickListener {
             stopServiceOnClick()
         }
+
+        result_button.setOnClickListener {
+            val fragment = ResultDialog(
+                mDbManager.actionGetLastEvent(),
+                mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
+            )
+            fragment.show(fragmentManager!!,"missiles")
+        }
         updateUIWithCurrentState(false)
 
         mPunchRecyclerView = punch_recycler_view
@@ -154,12 +162,7 @@ class MainFragment : Fragment() {
                     )
                         .show()
                 } else {
-//                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
-                    val fragment = ResultDialog(
-                        mDbManager.actionGetLastEvent(),
-                        mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
-                    )
-                    fragment.show(fragmentManager!!,"missiles")
+                    findNavController().navigate(MainFragmentDirections.actionGoToEventsFragment())
                 }
             }
         }
