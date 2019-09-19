@@ -82,6 +82,8 @@ class TrackingService : Service(), BeaconConsumer,
 
     private var mServerUrl = ""
 
+    private var mServerUrlGetted = false
+
     private var mTimeSynchronized = false
 
     //Collections
@@ -126,13 +128,20 @@ class TrackingService : Service(), BeaconConsumer,
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mGpsService = IGPSTrackerServiceRemote.Stub.asInterface(service)
 
-            mServerUrl = mGpsService!!.punchesUploadUrl
-            stopOGPSCenterService()
-            Log.i(TAG_OGPSCENTER, "ogps url: " + mGpsService!!.punchesUploadUrl)
+            try {
+                mServerUrl = mGpsService!!.punchesUploadUrl
+                Log.i(TAG_OGPSCENTER, "ogps url: " + mGpsService!!.punchesUploadUrl)
+
+            } catch (ex: Exception) {
+                mServerUrlGetted = false
+            }
             Log.i(
-                TAG_OGPSCENTER, "ogpscenter connected" +
-                        "\ncomponent name: ${name.toString()}"
+                TAG_OGPSCENTER, ".\nogpscenter connected" +
+                        "\ncomponent name: ${name.toString()}" +
+                        "\nurl getted: $mServerUrlGetted"
             )
+            stopOGPSCenterService()
+
         }
     }
 
