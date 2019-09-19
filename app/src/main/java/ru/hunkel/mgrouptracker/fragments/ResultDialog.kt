@@ -23,11 +23,14 @@ class ResultDialog(
         var view = inflater.inflate(R.layout.event_results, null)
         builder.setView(view)
 
-        view.time_on_distance_text_view.text = "Время: " + convertLongToTime(
+        val timeOnDistance = convertLongToTime(
             (event.endTime - event.startTime),
             PATTERN_HOUR_MINUTE_SECOND,
-            TimeZone.getTimeZone("UTC-0:00")
+            TimeZone.getTimeZone("UTC-3")
         )
+
+        view.time_on_distance_text_view.text = "Время: $timeOnDistance"
+
         view.control_points_text_view.text = "КП: " + punches.size.toString()
         return builder.create()
     }
