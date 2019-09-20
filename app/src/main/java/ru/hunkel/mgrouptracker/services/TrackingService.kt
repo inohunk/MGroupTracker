@@ -296,14 +296,11 @@ class TrackingService : Service(), BeaconConsumer,
             mBuilder!!.setChannelId(channel.id)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            mBeaconManager.enableForegroundServiceScanning(
-                mBuilder!!.build(),
-                NOTIFICATION_STATE_ID
-            )
-        } else {
-            notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
-        }
+        mBeaconManager.enableForegroundServiceScanning(
+            mBuilder!!.build(),
+            NOTIFICATION_STATE_ID
+        )
+        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
     }
 
 
@@ -333,6 +330,18 @@ class TrackingService : Service(), BeaconConsumer,
         mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "Control Points Notification Channel",
+                "Control Points Notification", NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+            mBuilder!!.setChannelId(channel.id)
+        }
+
+
+        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
 
         notificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
