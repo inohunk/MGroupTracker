@@ -27,3 +27,7 @@ fun convertLongToTime(time: Long, pattern: String, timeZone: TimeZone): String {
     format.timeZone = timeZone
     return format.format(data)
 }
+
+fun roundMilliseconds(ms: Long):Long {
+    return (1000*(ms/1000))
+}
