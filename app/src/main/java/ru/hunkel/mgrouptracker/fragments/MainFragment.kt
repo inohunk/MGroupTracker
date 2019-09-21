@@ -108,7 +108,11 @@ class MainFragment : Fragment() {
             stopServiceOnClick()
         }
         result_button.setOnClickListener {
-
+            val fragment = ResultFragment(
+                mDbManager.actionGetLastEvent(),
+                mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
+            )
+            fragment.show(fragmentManager!!,"missiles")
         }
         updateUIWithCurrentState(false)
 
@@ -194,6 +198,7 @@ class MainFragment : Fragment() {
             )
             visibility = View.VISIBLE
         }
+        result_button.visibility = View.VISIBLE
         context!!.unbindService(mTrackingServiceConnection)
         context!!.stopService(Intent(context, TrackingService::class.java))
         updateUIWithCurrentState(false)
@@ -335,6 +340,7 @@ class MainFragment : Fragment() {
             )
             start_time_text_view.visibility = View.VISIBLE
             end_time_text_view.visibility = View.GONE
+            result_button.visibility = View.GONE
             updateUIWithCurrentState(true)
             mServiceBounded = true
             try {
