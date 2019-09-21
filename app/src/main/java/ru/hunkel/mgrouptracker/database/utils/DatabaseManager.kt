@@ -124,6 +124,15 @@ class DatabaseManager(context: Context) {
         return punches
     }
 
+    fun actionGetPunchesByEventIdWithAscSorting(id: Int):List<Punches>{
+        val punches = mDb.trackingModel().getPunchesByEventIdWithAscSorting(id)
+        Log.i(TAG, "PUNCHES LIST:\n")
+        for (punch in punches) {
+            Log.i(TAG, "\t${punch.controlPoint}\n")
+        }
+        return punches
+    }
+
     fun actionGetPunchByControlPoint(cp: Int): Punches {
         return mDb.trackingModel().getPunchByControlPoint(cp)
     }
