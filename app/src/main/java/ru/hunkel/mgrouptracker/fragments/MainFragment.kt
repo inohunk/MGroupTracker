@@ -31,6 +31,8 @@ import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.services.TrackingService
 import ru.hunkel.mgrouptracker.utils.PATTERN_HOUR_MINUTE_SECOND
+import ru.hunkel.mgrouptracker.utils.PhoneTester
+import ru.hunkel.mgrouptracker.utils.SUCCESS
 import ru.hunkel.mgrouptracker.utils.convertLongToTime
 import java.text.SimpleDateFormat
 import java.util.*
@@ -88,6 +90,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        testDevice()
         start_event_button.background =
             EventDrawable(ContextCompat.getColor(context!!, R.color.color_start_button))
         stop_event_button.background =
@@ -285,6 +288,14 @@ class MainFragment : Fragment() {
                     ).show()
                 }
             }
+        }
+    }
+
+    private fun testDevice() {
+        val tester = PhoneTester(context!!)
+        val errorCode = tester.test(context!!.packageManager)
+        if (errorCode != SUCCESS) {
+            ErrorFragment(errorCode).show(fragmentManager!!, "OnError")
         }
     }
 
