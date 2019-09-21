@@ -233,6 +233,15 @@ class MainFragment : Fragment() {
                     }
                 }
             }
+        } else {
+            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+            if (mBluetoothAdapter.isEnabled) {
+                startTracking()
+            } else {
+                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(intent, REQUEST_BLUETOOTH)
+            }
         }
     }
 
