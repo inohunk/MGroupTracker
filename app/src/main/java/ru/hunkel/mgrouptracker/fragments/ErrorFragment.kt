@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import kotlinx.android.synthetic.main.fragment_error.view.*
@@ -27,7 +28,11 @@ class ErrorFragment(private val errorCode: Int) : DialogFragment() {
                 dismiss()
                 activity?.finish()
             }
-        return builder.create()
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(resources.getColor(R.color.colorError))
+        }
+        return dialog
     }
 
     override fun onCancel(dialog: DialogInterface) {
