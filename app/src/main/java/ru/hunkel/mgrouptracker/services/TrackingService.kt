@@ -20,6 +20,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.altbeacon.beacon.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -28,6 +29,7 @@ import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
+import ru.hunkel.mgrouptracker.fragments.BROADCAST_TYPE
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_TYPE_FIX_TIME
 import ru.hunkel.mgrouptracker.fragments.MainFragment
 import ru.hunkel.mgrouptracker.managers.TimeManager
@@ -570,9 +572,8 @@ class TrackingService : Service(), BeaconConsumer,
             )
             mDatabaseManager.actionReplacePunchSimple(p)
         }
-        val broadcastIntent = Intent(BROADCAST_ACTION).apply {
-            type = BROADCAST_TYPE_FIX_TIME
-        }
+        val broadcastIntent = Intent(BROADCAST_ACTION)
+        broadcastIntent.putExtra(BROADCAST_TYPE, BROADCAST_TYPE_FIX_TIME)
         sendBroadcast(broadcastIntent)
     }
 

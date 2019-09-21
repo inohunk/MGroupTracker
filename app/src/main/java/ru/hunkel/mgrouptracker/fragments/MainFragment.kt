@@ -39,7 +39,9 @@ import java.util.*
 import kotlin.math.abs
 
 const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
-const val BROADCAST_TYPE_FIX_TIME = "Time fixing"
+
+const val BROADCAST_TYPE = "type"
+const val BROADCAST_TYPE_FIX_TIME = 1
 
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 
@@ -59,6 +61,8 @@ class MainFragment : Fragment() {
     private lateinit var mDbManager: DatabaseManager
 
     private lateinit var mPunchRecyclerView: RecyclerView
+
+    private lateinit var mPunchAdapter: PunchAdapter
 
     private lateinit var mBroadcastReceiver: BroadcastReceiver
 
@@ -108,21 +112,28 @@ class MainFragment : Fragment() {
         mPunchRecyclerView = punch_recycler_view
         mPunchRecyclerView.layoutManager = LinearLayoutManager(context!!)
         mPunchRecyclerView.adapter = PunchAdapter(mutableListOf())
+        mPunchAdapter = mPunchRecyclerView.adapter as PunchAdapter
 
         mDbManager = DatabaseManager(context!!)
 
         mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val list = mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
+                val list = mDbManager.actionGetPunchesByEventIdWithAscSorting(mDbManager.actionGetLastEvent().id)
                 //TODO optimize list updating
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
-                when (intent!!.type) {
-                    BROADCAST_TYPE_FIX_TIME -> {
-                        start_time_text_view.text = convertLongToTime(
-                            mDbManager.actionGetLastEvent().startTime,
-                            PATTERN_HOUR_MINUTE_SECOND
-                        )
+                try {
+                    val type = intent?.getIntExtra(BROADCAST_TYPE, -1)
+                    when (type) {
+                        BROADCAST_TYPE_FIX_TIME -> {
+                            start_time_text_view.text = convertLongToTime(
+                                mDbManager.actionGetLastEvent().startTime,
+                                PATTERN_HOUR_MINUTE_SECOND
+                            )
+                            mPunchAdapter.updateItems(mDbManager.actionGetPunchesByEventIdWithAscSorting(mDbManager.actionGetLastEvent().id))
+                        }
                     }
+                } catch (ex: Exception) {
+                    Log.e(TAG, ex.message)
                 }
             }
         }
