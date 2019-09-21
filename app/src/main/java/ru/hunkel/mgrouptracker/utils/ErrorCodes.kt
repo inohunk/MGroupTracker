@@ -1,5 +1,8 @@
 package ru.hunkel.mgrouptracker.utils
 
+import ru.hunkel.mgrouptracker.models.Error
+import ru.hunkel.mgrouptracker.models.ErrorLevel
+
 //Errors
 const val SUCCESS = -1
 

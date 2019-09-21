@@ -1,4 +1,4 @@
-package ru.hunkel.mgrouptracker.utils
+package ru.hunkel.mgrouptracker.models
 
 data class Error(
     val code: Int,
@@ -6,3 +6,8 @@ data class Error(
     var description: String,
     val level: ErrorLevel
 )
+
+enum class ErrorLevel {
+    FATAL,
+    NORMAL
+}

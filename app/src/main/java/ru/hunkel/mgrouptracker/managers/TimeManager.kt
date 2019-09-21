@@ -1,4 +1,4 @@
-package ru.hunkel.mgrouptracker.utils
+package ru.hunkel.mgrouptracker.managers
 
 import android.Manifest
 import android.content.Context
