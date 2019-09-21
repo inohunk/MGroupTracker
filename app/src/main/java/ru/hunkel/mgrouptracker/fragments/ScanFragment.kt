@@ -44,7 +44,7 @@ class ScanFragment : Fragment() {
 
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-            takePictureIntent.resolveActivity(context?.packageManager)?.also {
+            takePictureIntent.resolveActivity(context!!.packageManager)?.also {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
             }
         }
