@@ -57,6 +57,8 @@ class TrackingService : Service(), BeaconConsumer,
 
         //Notifications
         private const val NOTIFICATION_CHANNEL_ID = "TrackingNotifications"
+        private const val NOTIFICATION_CHANNEL_NAME = "TrackingNotificationsChannel"
+
         private const val NOTIFICATION_STATE_ID = 1
         private const val NOTIFICATION_CONTROL_POINT_ID = 2
 
@@ -72,6 +74,8 @@ class TrackingService : Service(), BeaconConsumer,
 
     //Notifications
     private var mBuilder: NotificationCompat.Builder? = null
+
+    private lateinit var mNotificationManager: NotificationManager
 
 
     //Database
@@ -188,6 +192,8 @@ class TrackingService : Service(), BeaconConsumer,
         mTimeManager = TimeManager(this)
         TimeManager.sTimeChangedListener = this
         mDatabaseManager = DatabaseManager(this)
+        mNotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         initBeaconManager()
         startOnClick()
@@ -285,16 +291,14 @@ class TrackingService : Service(), BeaconConsumer,
         )
 
         mBuilder!!.setContentIntent(pendingIntent)
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "Controls Notification Channel",
-                "Controls Notification", NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_CHANNEL_ID,
+                NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT
             )
-            channel.description = "Controls Notification Channel"
-            notificationManager.createNotificationChannel(channel)
+            mNotificationManager.createNotificationChannel(channel)
             mBuilder!!.setChannelId(channel.id)
         }
 
@@ -302,7 +306,7 @@ class TrackingService : Service(), BeaconConsumer,
             mBuilder!!.build(),
             NOTIFICATION_STATE_ID
         )
-        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
+        mNotificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
     }
 
 
@@ -335,15 +339,15 @@ class TrackingService : Service(), BeaconConsumer,
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "Control Points Notification Channel",
-                "Control Points Notification", NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_CHANNEL_ID,
+                NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT
             )
             notificationManager.createNotificationChannel(channel)
             mBuilder!!.setChannelId(channel.id)
         }
 
 
-        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
+//        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
 
         notificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
