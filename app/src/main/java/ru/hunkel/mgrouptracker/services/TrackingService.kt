@@ -20,7 +20,6 @@ import androidx.core.graphics.drawable.DrawableCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.altbeacon.beacon.*
 import org.json.JSONArray
 import org.json.JSONObject
