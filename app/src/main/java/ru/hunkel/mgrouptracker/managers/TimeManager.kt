@@ -20,7 +20,7 @@ class TimeManager(private val context: Context) : LocationListener {
     private var MILLIS_IN_DAY = 1000 * 60 * 60 * 24
 
     interface TimeChangedListener {
-        fun onTimeChaned(time: Long)
+        fun onTimeChanged(time: Long)
     }
 
     companion object {
@@ -74,7 +74,7 @@ class TimeManager(private val context: Context) : LocationListener {
         mDeltaTime = location!!.time - System.currentTimeMillis()
         mTime = location.time
         if (sTimeChangedListener != null) {
-            sTimeChangedListener!!.onTimeChaned(mTime)
+            sTimeChangedListener!!.onTimeChanged(mTime)
         }
         Log.i(TAG_TIME_MANAGER, "onLocationChanged")
     }

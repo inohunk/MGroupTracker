@@ -175,7 +175,7 @@ class TrackingService : Service(), BeaconConsumer,
         }
     }
 
-    override fun onTimeChaned(time: Long) {
+    override fun onTimeChanged(time: Long) {
         fixTimeInDatabase()
         mTimeSynchronized = true
     }
