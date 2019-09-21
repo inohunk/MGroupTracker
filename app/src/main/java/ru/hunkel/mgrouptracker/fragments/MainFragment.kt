@@ -107,6 +107,9 @@ class MainFragment : Fragment() {
         stop_event_button.setOnClickListener {
             stopServiceOnClick()
         }
+        result_button.setOnClickListener {
+
+        }
         updateUIWithCurrentState(false)
 
         mPunchRecyclerView = punch_recycler_view

@@ -25,6 +25,7 @@ ext {
             targetSdkVersion 29
             testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
             multiDexEnabled true
+            vectorDrawables.useSupportLibrary = true
         }
         buildTypes {
             release {
