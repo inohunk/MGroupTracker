@@ -56,7 +56,7 @@
         <EditTextPreference
                 android:dependency="cutoff_enabled"
                 android:icon="@drawable/ic_update_parameter"
-                app:defaultValue="101"
+                app:defaultValue="250"
                 app:key="cutoff_number"
                 app:title="КП отсечки"
                 app:useSimpleSummaryProvider="true" />
