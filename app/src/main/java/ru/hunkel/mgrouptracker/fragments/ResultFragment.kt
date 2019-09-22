@@ -37,15 +37,7 @@ class ResultFragment(
         val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
         val cutNum = pm.getString("cutoff_number", "-1")!!.toInt()
         val cutEnabled = pm.getBoolean("cutoff_enabled", false)
-        if ((cutNum == -1) and (cutEnabled.not())) {
-            val timeOnDistance = convertMillisToTime(
-                runningTime,
-                PATTERN_HOUR_MINUTE_SECOND,
-                TimeZone.getTimeZone("UTC-3")
-            )
-            view.time_on_distance_text_view.text =
-                "Время(отсечка не установлена)\n\t $timeOnDistance"
-        } else {
+        if (cutEnabled) {
             val minId = punches.indexOfFirst {
                 it.controlPoint == cutNum
             }
@@ -58,7 +50,8 @@ class ResultFragment(
             val deltaFTime = endTimeCutNanos - startTimeCutNanos
 
             if ((deltaFTime >= 0) and (deltaFTime <= CUT_TIME)) {
-                var timeOnDistance = TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - deltaFTime)
+                var timeOnDistance =
+                    TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - deltaFTime)
 //                timeOnDistance = roundMilliseconds(timeOnDistance)
                 val time = convertMillisToTime(
                     TimeUnit.SECONDS.toMillis(timeOnDistance),
@@ -68,9 +61,15 @@ class ResultFragment(
                 view.time_on_distance_text_view.text =
                     "Время(отсечка установлена)\n\t $time"
             }
+        } else {
+            val timeOnDistance = convertMillisToTime(
+                runningTime,
+                PATTERN_HOUR_MINUTE_SECOND,
+                TimeZone.getTimeZone("UTC-3")
+            )
+            view.time_on_distance_text_view.text =
+                "Время(отсечка не установлена)\n\t $timeOnDistance"
         }
-
-
         return builder.create()
     }
 
