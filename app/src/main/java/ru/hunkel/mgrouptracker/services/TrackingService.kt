@@ -371,7 +371,7 @@ class TrackingService : Service(), BeaconConsumer,
                 val time = getTimeFromService(cp)
                 punch.time = time
                 Log.i(
-                    TAG_BEACON, "Beacon $cp time updated - ${convertLongToTime(
+                    TAG_BEACON, "Beacon $cp time updated - ${convertMillisToTime(
                         time,
                         PATTERN_FULL_DATE_INVERSE
                     )}"
@@ -462,8 +462,8 @@ class TrackingService : Service(), BeaconConsumer,
                 json.put("name", "КП ${i.controlPoint}")
                 json.put(
                     "time",
-                    convertLongToTime(i.time, PATTERN_YEAR_MONTH_DAY) + "T" +
-                            convertLongToTime(i.time, PATTERN_HOUR_MINUTE_SECOND) + "Z"
+                    convertMillisToTime(i.time, PATTERN_YEAR_MONTH_DAY) + "T" +
+                            convertMillisToTime(i.time, PATTERN_HOUR_MINUTE_SECOND) + "Z"
                 )
                 json.put("score", (i.controlPoint / 10))
                 json.put("priority", 400)
@@ -560,18 +560,18 @@ class TrackingService : Service(), BeaconConsumer,
             Log.i(
                 TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
                         "${p.eventId}\n" +
-                        "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n==="
+                        "${convertMillisToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n==="
             )
 
             p.time += timeDelta
             Log.i(
                 TAG_BEACON,
-                "new punch time ${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}"
+                "new punch time ${convertMillisToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}"
             )
             Log.i(
                 TAG_BEACON, "PUNCH-TIM\n${p.id}\n" +
                         "${p.eventId}\n" +
-                        "${convertLongToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n"
+                        "${convertMillisToTime(p.time, PATTERN_HOUR_MINUTE_SECOND)}\n"
             )
             mDatabaseManager.actionReplacePunchSimple(p)
         }

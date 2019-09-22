@@ -33,7 +33,7 @@ import ru.hunkel.mgrouptracker.services.TrackingService
 import ru.hunkel.mgrouptracker.utils.PATTERN_HOUR_MINUTE_SECOND
 import ru.hunkel.mgrouptracker.utils.PhoneTester
 import ru.hunkel.mgrouptracker.utils.SUCCESS
-import ru.hunkel.mgrouptracker.utils.convertLongToTime
+import ru.hunkel.mgrouptracker.utils.convertMillisToTime
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -132,7 +132,7 @@ class MainFragment : Fragment() {
                     val type = intent?.getIntExtra(BROADCAST_TYPE, -1)
                     when (type) {
                         BROADCAST_TYPE_FIX_TIME -> {
-                            start_time_text_view.text = convertLongToTime(
+                            start_time_text_view.text = convertMillisToTime(
                                 mDbManager.actionGetLastEvent().startTime,
                                 PATTERN_HOUR_MINUTE_SECOND
                             )
@@ -192,7 +192,7 @@ class MainFragment : Fragment() {
 
     private fun stopServiceOnClick() {
         end_time_text_view.apply {
-            text = convertLongToTime(
+            text = convertMillisToTime(
                 mTrackingService!!.stopEvent(),
                 PATTERN_HOUR_MINUTE_SECOND
             )
@@ -334,7 +334,7 @@ class MainFragment : Fragment() {
                     Context.BIND_WAIVE_PRIORITY
                 )
             }
-            start_time_text_view.text = convertLongToTime(
+            start_time_text_view.text = convertMillisToTime(
                 System.currentTimeMillis(),
                 PATTERN_HOUR_MINUTE_SECOND
             )
@@ -410,7 +410,7 @@ class MainFragment : Fragment() {
             format.timeZone = TimeZone.getTimeZone("UTC")
             val diff = abs(punch.time - eventStartTime)
             view.punch_time_text_view.text =
-                "${convertLongToTime(punch.time, PATTERN_HOUR_MINUTE_SECOND)}"
+                "${convertMillisToTime(punch.time, PATTERN_HOUR_MINUTE_SECOND)}"
             view.from_start_time_text_view.text = "${format.format(Date(diff))}"
         }
     }

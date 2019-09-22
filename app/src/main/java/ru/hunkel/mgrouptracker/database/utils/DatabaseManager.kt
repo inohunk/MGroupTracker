@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import ru.hunkel.mgrouptracker.database.TrackingDatabase
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
-import ru.hunkel.mgrouptracker.utils.convertLongToTime
+import ru.hunkel.mgrouptracker.utils.convertMillisToTime
 
 const val TAG = "DatabaseManager"
 
@@ -47,8 +47,8 @@ class DatabaseManager(context: Context) {
             "Get last event:\n" +
                     "EVENT INFO:\n\t" +
                     "id: ${event.id}\n\t" +
-                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
-                    "end time: ${convertLongToTime(event.endTime)}\n"
+                    "start time: ${convertMillisToTime(event.startTime)}\n\t" +
+                    "end time: ${convertMillisToTime(event.endTime)}\n"
         )
         return event
     }
@@ -69,8 +69,8 @@ class DatabaseManager(context: Context) {
             TAG,
             "REMOVED EVENT INFO:\n\t" +
                     "id: ${event.id}\n\t" +
-                    "start time: ${convertLongToTime(event.startTime)}\n\t" +
-                    "end time: ${convertLongToTime(event.endTime)}\n"
+                    "start time: ${convertMillisToTime(event.startTime)}\n\t" +
+                    "end time: ${convertMillisToTime(event.endTime)}\n"
         )
     }
 
@@ -89,7 +89,7 @@ class DatabaseManager(context: Context) {
                     "id: ${lastPunch.id}\n" +
                     "event id: ${lastPunch.eventId}\n" +
                     "control point: ${lastPunch.controlPoint}\n" +
-                    "time: ${convertLongToTime(lastPunch.time)}\n"
+                    "time: ${convertMillisToTime(lastPunch.time)}\n"
         )
     }
 
@@ -103,7 +103,7 @@ class DatabaseManager(context: Context) {
                     "id: ${lastPunch.id}\n" +
                     "event id: ${lastPunch.eventId}\n" +
                     "control point: ${lastPunch.controlPoint}\n" +
-                    "time: ${convertLongToTime(lastPunch.time)}\n"
+                    "time: ${convertMillisToTime(lastPunch.time)}\n"
         )
     }
 

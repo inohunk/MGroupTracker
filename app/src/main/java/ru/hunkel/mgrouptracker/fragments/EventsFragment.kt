@@ -15,7 +15,7 @@ import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.utils.PATTERN_FULL_DATE_INVERSE
-import ru.hunkel.mgrouptracker.utils.convertLongToTime
+import ru.hunkel.mgrouptracker.utils.convertMillisToTime
 
 const val TAG = "EventsFragment"
 const val ACTION_DELETE = 0
@@ -116,9 +116,9 @@ class EventsFragment : Fragment() {
         fun bind(event: Event) {
             view.event_id_text_view.text = "Мероприятие №${event.id}"
             view.event_start_time_text_view.text =
-                "Время начала: ${convertLongToTime(event.startTime, PATTERN_FULL_DATE_INVERSE)}"
+                "Время начала: ${convertMillisToTime(event.startTime, PATTERN_FULL_DATE_INVERSE)}"
             view.event_end_time_text_view.text =
-                "Время окончания: ${convertLongToTime(event.endTime, PATTERN_FULL_DATE_INVERSE)}"
+                "Время окончания: ${convertMillisToTime(event.endTime, PATTERN_FULL_DATE_INVERSE)}"
         }
     }
 }

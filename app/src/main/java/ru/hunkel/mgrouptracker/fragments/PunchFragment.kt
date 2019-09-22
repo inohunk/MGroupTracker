@@ -15,7 +15,7 @@ import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.utils.PATTERN_HOUR_MINUTE_SECOND
-import ru.hunkel.mgrouptracker.utils.convertLongToTime
+import ru.hunkel.mgrouptracker.utils.convertMillisToTime
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,11 +43,11 @@ class PunchFragment : Fragment() {
         val eventId = PunchFragmentArgs.fromBundle(arguments!!).argumentEventId
         val event = dbManager.actionGetEventById(eventId)
         eventStartTime = event.startTime
-        view.start_time_text_view.text = convertLongToTime(
+        view.start_time_text_view.text = convertMillisToTime(
             eventStartTime,
             PATTERN_HOUR_MINUTE_SECOND
         )
-        view.end_time_text_view.text = convertLongToTime(
+        view.end_time_text_view.text = convertMillisToTime(
             event.endTime,
             PATTERN_HOUR_MINUTE_SECOND
         )
@@ -89,7 +89,7 @@ class PunchFragment : Fragment() {
                 format.timeZone = TimeZone.getTimeZone("UTC")
                 val diff = punch.time - eventStartTime
                 view.punch_time_text_view.text =
-                    "${convertLongToTime(punch.time, PATTERN_HOUR_MINUTE_SECOND)}"
+                    "${convertMillisToTime(punch.time, PATTERN_HOUR_MINUTE_SECOND)}"
                 view.from_start_time_text_view.text = "${format.format(Date(diff))}"
             }
         }

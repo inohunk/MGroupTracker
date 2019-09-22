@@ -10,7 +10,7 @@ import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.utils.PATTERN_HOUR_MINUTE_SECOND
-import ru.hunkel.mgrouptracker.utils.convertLongToTime
+import ru.hunkel.mgrouptracker.utils.convertMillisToTime
 import ru.hunkel.mgrouptracker.utils.roundMilliseconds
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -38,7 +38,7 @@ class ResultFragment(
         val cutNum = pm.getString("cutoff_number", "-1")!!.toInt()
         val cutEnabled = pm.getBoolean("cutoff_enabled", false)
         if ((cutNum == -1) and (cutEnabled.not())) {
-            val timeOnDistance = convertLongToTime(
+            val timeOnDistance = convertMillisToTime(
                 runningTime,
                 PATTERN_HOUR_MINUTE_SECOND,
                 TimeZone.getTimeZone("UTC-3")
@@ -60,7 +60,7 @@ class ResultFragment(
             if ((deltaFTime >= 0) and (deltaFTime <= CUT_TIME)) {
                 var timeOnDistance = TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - deltaFTime)
 //                timeOnDistance = roundMilliseconds(timeOnDistance)
-                val time = convertLongToTime(
+                val time = convertMillisToTime(
                     TimeUnit.SECONDS.toMillis(timeOnDistance),
                     PATTERN_HOUR_MINUTE_SECOND,
                     TimeZone.getTimeZone("UTC-3")
