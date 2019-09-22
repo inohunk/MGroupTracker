@@ -14,10 +14,8 @@
   ~ limitations under the License.
   -->
 
-<androidx.preference.PreferenceScreen
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        >
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
     <EditTextPreference
             android:icon="@drawable/ic_distance"
             app:defaultValue="3"
@@ -50,4 +48,17 @@
             android:key="update_punch_params"
             android:title="Параметры обновления метки"
             app:useSimpleSummaryProvider="true" />
+    <PreferenceCategory android:title="Дополнительно">
+        <CheckBoxPreference
+                android:enabled="true"
+                android:key="cutoff_enabled"
+                android:title="Включено"/>
+        <EditTextPreference
+                android:dependency="cutoff_enabled"
+                android:icon="@drawable/ic_update_parameter"
+                app:defaultValue="101"
+                app:key="cutoff_number"
+                app:title="КП отсечки"
+                app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

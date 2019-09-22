@@ -19,6 +19,7 @@ class ResultFragment(
     private val event: Event,
     private val punches: List<Punches>
 ) : DialogFragment() {
+    private val CUT_TIME = 15L
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(activity!!)
@@ -26,20 +27,49 @@ class ResultFragment(
         var view = inflater.inflate(R.layout.fragment_result, null)
         builder.setView(view)
 
-        val endTimeNanos = TimeUnit.MILLISECONDS.toNanos(event.endTime)
-        val startTimeNanos = TimeUnit.MILLISECONDS.toNanos(event.startTime)
-        val deltaTime =
+        val endTimeNanos = roundMilliseconds(event.endTime)
+        val startTimeNanos = roundMilliseconds(event.startTime)
+        val runningTime =
             roundMilliseconds(
-                TimeUnit.NANOSECONDS.toMillis(endTimeNanos - startTimeNanos)
+                endTimeNanos - startTimeNanos
             )
 
-        val timeOnDistance = convertLongToTime(
-            deltaTime,
-            PATTERN_HOUR_MINUTE_SECOND,
-            TimeZone.getTimeZone("UTC-3")
-        )
+        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        val cutNum = pm.getString("cutoff_number", "-1")!!.toInt()
+        val cutEnabled = pm.getBoolean("cutoff_enabled", false)
+        if ((cutNum == -1) and (cutEnabled.not())) {
+            val timeOnDistance = convertLongToTime(
+                runningTime,
+                PATTERN_HOUR_MINUTE_SECOND,
+                TimeZone.getTimeZone("UTC-3")
+            )
+            view.time_on_distance_text_view.text =
+                "Время(отсечка не установлена)\n\t $timeOnDistance"
+        } else {
+            val minId = punches.indexOfFirst {
+                it.controlPoint == cutNum
+            }
 
-        view.time_on_distance_text_view.text = "Время: $timeOnDistance"
+            val maxId = punches.indexOfLast {
+                it.controlPoint == cutNum
+            }
+            val endTimeCutNanos = TimeUnit.MILLISECONDS.toSeconds(punches[maxId].time)
+            val startTimeCutNanos = TimeUnit.MILLISECONDS.toSeconds(punches[minId].time)
+            val deltaFTime = endTimeCutNanos - startTimeCutNanos
+
+            if ((deltaFTime >= 0) and (deltaFTime <= CUT_TIME)) {
+                var timeOnDistance = TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - deltaFTime)
+//                timeOnDistance = roundMilliseconds(timeOnDistance)
+                val time = convertLongToTime(
+                    TimeUnit.SECONDS.toMillis(timeOnDistance),
+                    PATTERN_HOUR_MINUTE_SECOND,
+                    TimeZone.getTimeZone("UTC-3")
+                )
+                view.time_on_distance_text_view.text =
+                    "Время(отсечка установлена)\n\t $time"
+            }
+        }
+
 
         return builder.create()
     }
