@@ -7,11 +7,9 @@ import android.app.Activity.RESULT_OK
 import android.bluetooth.BluetoothAdapter
 import android.content.*
 import android.content.pm.PackageManager
-import android.net.Uri.fromParts
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -75,6 +73,7 @@ class MainFragment : Fragment() {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mTrackingService = ITrackingService.Stub.asInterface(service)
+            mServiceBounded = true
         }
     }
 
@@ -112,7 +111,7 @@ class MainFragment : Fragment() {
                 mDbManager.actionGetLastEvent(),
                 mDbManager.actionGetPunchesByEventId(mDbManager.actionGetLastEvent().id)
             )
-            fragment.show(fragmentManager!!,"missiles")
+            fragment.show(parentFragmentManager, "missiles")
         }
         updateUIWithCurrentState(false)
 
@@ -125,7 +124,8 @@ class MainFragment : Fragment() {
 
         mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val list = mDbManager.actionGetPunchesByEventIdWithAscSorting(mDbManager.actionGetLastEvent().id)
+                val list =
+                    mDbManager.actionGetPunchesByEventIdWithAscSorting(mDbManager.actionGetLastEvent().id)
                 //TODO optimize list updating
                 (mPunchRecyclerView.adapter!! as PunchAdapter).updateItems(list)
                 try {
@@ -136,7 +136,11 @@ class MainFragment : Fragment() {
                                 mDbManager.actionGetLastEvent().startTime,
                                 PATTERN_HOUR_MINUTE_SECOND
                             )
-                            mPunchAdapter.updateItems(mDbManager.actionGetPunchesByEventIdWithAscSorting(mDbManager.actionGetLastEvent().id))
+                            mPunchAdapter.updateItems(
+                                mDbManager.actionGetPunchesByEventIdWithAscSorting(
+                                    mDbManager.actionGetLastEvent().id
+                                )
+                            )
                         }
                     }
                 } catch (ex: Exception) {
@@ -158,7 +162,7 @@ class MainFragment : Fragment() {
                 if (mServiceBounded) {
                     Toast.makeText(
                         context,
-                        "Нельзя открыть настройки во время соревнования.",
+                        "Нельзя открыть во время соревнования.",
                         Toast.LENGTH_SHORT
                     )
                         .show()
@@ -191,16 +195,22 @@ class MainFragment : Fragment() {
     }
 
     private fun stopServiceOnClick() {
-        end_time_text_view.apply {
-            text = convertMillisToTime(
-                mTrackingService!!.stopEvent(),
-                PATTERN_HOUR_MINUTE_SECOND
-            )
-            visibility = View.VISIBLE
+        val endTime = mTrackingService?.stopEvent()
+        if (endTime != null) {
+
+            end_time_text_view.apply {
+                text = convertMillisToTime(
+                    mTrackingService!!.stopEvent(),
+                    PATTERN_HOUR_MINUTE_SECOND
+                )
+                visibility = View.VISIBLE
+            }
+            result_button.visibility = View.VISIBLE
         }
-        result_button.visibility = View.VISIBLE
-        context!!.unbindService(mTrackingServiceConnection)
-        context!!.stopService(Intent(context, TrackingService::class.java))
+        if (mServiceBounded) {
+            context!!.unbindService(mTrackingServiceConnection)
+            context!!.stopService(Intent(context, TrackingService::class.java))
+        }
         updateUIWithCurrentState(false)
         mServiceBounded = false
     }
@@ -226,22 +236,24 @@ class MainFragment : Fragment() {
                         permission
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
+                    requestPermissions(permissions, requestCode)
                     Toast.makeText(
                         context,
                         "Разрешение на местоположение необходимо для записи ваших треков",
                         Toast.LENGTH_LONG
                     ).show()
-                    if ((shouldShowRequestPermissionRationale(permission))) {
-                        requestPermissions(permissions, requestCode)
-                    } else {
-                        val intent = Intent()
-                        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
+//                    if ((shouldShowRequestPermissionRationale(permission))) {
+//                        requestPermissions(permissions, requestCode)
+//                    } else {
+//                        val intent = Intent()
+//                        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
+//
+//                        val uri = fromParts("package", context!!.packageName, null)
+//                        intent.data = uri
+//
+//                        startActivity(intent)
 
-                        val uri = fromParts("package", context!!.packageName, null)
-                        intent.data = uri
-
-                        startActivity(intent)
-                    }
+//                    }
 
                 } else {
                     mGpsPermissionAccepted = true
@@ -314,7 +326,7 @@ class MainFragment : Fragment() {
         val tester = PhoneTester(context!!)
         val errorCode = tester.test(context!!.packageManager)
         if (errorCode != SUCCESS) {
-            ErrorFragment(errorCode).show(fragmentManager!!, "OnError")
+            ErrorFragment(errorCode).show(parentFragmentManager, "OnError")
         }
     }
 
@@ -342,12 +354,7 @@ class MainFragment : Fragment() {
             end_time_text_view.visibility = View.GONE
             result_button.visibility = View.GONE
             updateUIWithCurrentState(true)
-            mServiceBounded = true
-            try {
-                (mPunchRecyclerView.adapter as PunchAdapter).clear()
-            } catch (ex: Exception) {
-                Log.e(TAG, ex.message)
-            }
+            mPunchAdapter.clear()
         }
     }
 
