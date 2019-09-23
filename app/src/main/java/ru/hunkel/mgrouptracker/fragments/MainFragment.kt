@@ -52,6 +52,7 @@ class MainFragment : Fragment() {
         */
     companion object {
         var mServiceBounded = false
+        var mCurrentTimeZone = "Europe/Moscow"
     }
 
     private var mTrackingService: ITrackingService? = null
@@ -149,6 +150,13 @@ class MainFragment : Fragment() {
             }
         }
         context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        mCurrentTimeZone = pm.getString("pref_timezone","Europe/Moscow")!!
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

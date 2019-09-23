@@ -1,5 +1,6 @@
 package ru.hunkel.mgrouptracker.utils
 
+import ru.hunkel.mgrouptracker.fragments.MainFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -12,14 +13,14 @@ const val PATTERN_FULL_DATE_INVERSE = "$PATTERN_HOUR_MINUTE_SECOND dd.MM.yyyy"
 fun convertMillisToTime(time: Long): String {
     val date = Date(time)
     val format = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
-    format.timeZone = TimeZone.getTimeZone("Europe/Moscow")
+    format.timeZone = TimeZone.getTimeZone(MainFragment.mCurrentTimeZone)
     return format.format(date)
 }
 
 fun convertMillisToTime(time: Long, pattern: String): String {
     val date = Date(time)
     val format = SimpleDateFormat(pattern)
-    format.timeZone = TimeZone.getTimeZone("Europe/Moscow")
+    format.timeZone = TimeZone.getTimeZone(MainFragment.mCurrentTimeZone)
     return format.format(date)
 }
 

@@ -60,5 +60,9 @@
                 app:key="cutoff_number"
                 app:title="КП отсечки"
                 app:useSimpleSummaryProvider="true" />
+        <ru.hunkel.mgrouptracker.utils.TimeZonePreference
+                android:key="pref_timezone"
+                android:title="Часовой пояс"
+                app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>
