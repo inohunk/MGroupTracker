@@ -7,6 +7,7 @@ import ru.hunkel.mgrouptracker.database.TrackingDatabase
 import ru.hunkel.mgrouptracker.database.entities.Event
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.utils.convertMillisToTime
+import ru.hunkel.mgrouptracker.utils.roundMilliseconds
 
 const val TAG = "DatabaseManager"
 
@@ -81,6 +82,7 @@ class DatabaseManager(context: Context) {
     //Punches
     fun actionAddPunch(punch: Punches) {
         mDb.trackingModel().addPunch(punch)
+        punch.time = roundMilliseconds(punch.time)
         val lastPunch = mDb.trackingModel().getLastPunch()
 
         Log.i(
@@ -108,6 +110,7 @@ class DatabaseManager(context: Context) {
     }
 
     fun actionReplacePunchSimple(punch: Punches) {
+        punch.time = roundMilliseconds(punch.time)
         mDb.trackingModel().updatePunch(punch)
     }
 
@@ -119,6 +122,7 @@ class DatabaseManager(context: Context) {
         val punches = mDb.trackingModel().getPunchesByEventId(id)
         Log.i(TAG, "PUNCHES LIST:\n")
         for (punch in punches) {
+            punch.time = roundMilliseconds(punch.time)
             Log.i(TAG, "\t${punch.controlPoint}\n")
         }
         return punches
@@ -128,6 +132,7 @@ class DatabaseManager(context: Context) {
         val punches = mDb.trackingModel().getPunchesByEventIdWithAscSorting(id)
         Log.i(TAG, "PUNCHES LIST:\n")
         for (punch in punches) {
+            punch.time = roundMilliseconds(punch.time)
             Log.i(TAG, "\t${punch.controlPoint}\n")
         }
         return punches
