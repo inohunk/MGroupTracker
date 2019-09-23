@@ -19,7 +19,7 @@ class ResultFragment(
     private val event: Event,
     private val punches: List<Punches>
 ) : DialogFragment() {
-    private val CUT_TIME = 15L
+    private val CUT_TIME = 60*15L
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(activity!!)
@@ -66,7 +66,7 @@ class ResultFragment(
                 TimeZone.getTimeZone("UTC-3")
             )
             view.time_on_distance_text_view.text =
-                "Время(отсечка установлена)\n\t $time"
+                "Время(с отсечкой)\n\t $time"
         } else {
             val timeOnDistance = convertMillisToTime(
                 runningTime,
@@ -74,7 +74,7 @@ class ResultFragment(
                 TimeZone.getTimeZone("UTC-3")
             )
             view.time_on_distance_text_view.text =
-                "Время(отсечка не установлена)\n\t $timeOnDistance"
+                "Время(без отсечки)\n\t $timeOnDistance"
         }
         return builder.create()
     }
