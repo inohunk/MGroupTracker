@@ -46,6 +46,10 @@ class TimeManager(private val context: Context) : LocationListener {
         return mDeltaTime
     }
 
+    fun stopGps(){
+        mLocationManager?.removeUpdates(this)
+    }
+
     private fun getTimeFromGPS() {
         mLocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 

@@ -517,7 +517,7 @@ class TrackingService : Service(), BeaconConsumer,
     fun stopOnClick() {
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
-
+        mTimeManager.stopGps()
         mTrackingState = STATE_OFF
     }
 
