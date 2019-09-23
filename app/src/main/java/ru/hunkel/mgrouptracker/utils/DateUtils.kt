@@ -12,12 +12,14 @@ const val PATTERN_FULL_DATE_INVERSE = "$PATTERN_HOUR_MINUTE_SECOND dd.MM.yyyy"
 fun convertMillisToTime(time: Long): String {
     val date = Date(time)
     val format = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
+    format.timeZone = TimeZone.getTimeZone("Europe/Moscow")
     return format.format(date)
 }
 
 fun convertMillisToTime(time: Long, pattern: String): String {
     val date = Date(time)
     val format = SimpleDateFormat(pattern)
+    format.timeZone = TimeZone.getTimeZone("Europe/Moscow")
     return format.format(date)
 }
 
@@ -28,6 +30,6 @@ fun convertMillisToTime(time: Long, pattern: String, timeZone: TimeZone): String
     return format.format(data)
 }
 
-fun roundMilliseconds(ms: Long):Long {
-    return (1000*(ms/1000))
+fun roundMilliseconds(ms: Long): Long {
+    return (1000 * (ms / 1000))
 }
