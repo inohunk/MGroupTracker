@@ -45,7 +45,7 @@ interface TrackingDao {
     @Query("SELECT * FROM punches WHERE event_id = :id")
     fun getPunchesByEventId(id: Int): List<Punches>
 
-    @Query("SELECT * FROM punches INNER JOIN events ON events.id = punches.event_id WHERE event_id = :id ORDER BY punches.time ASC")
+    @Query("SELECT * FROM punches WHERE event_id = :id ORDER BY punches.time ASC")
     fun getPunchesByEventIdWithAscSorting(id: Int): List<Punches>
 
 
