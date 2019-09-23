@@ -37,7 +37,7 @@ class ResultFragment(
         val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
         val cutNum = pm.getString("cutoff_number", "-1")!!.toInt()
         val cutEnabled = pm.getBoolean("cutoff_enabled", false)
-        if (cutEnabled) {
+        if (cutEnabled and punches.isNotEmpty() and checkForCutPoint(cutNum, punches)) {
             val minId = punches.indexOfFirst {
                 it.controlPoint == cutNum
             }
@@ -45,22 +45,28 @@ class ResultFragment(
             val maxId = punches.indexOfLast {
                 it.controlPoint == cutNum
             }
-            val endTimeCutNanos = TimeUnit.MILLISECONDS.toSeconds(punches[maxId].time)
-            val startTimeCutNanos = TimeUnit.MILLISECONDS.toSeconds(punches[minId].time)
-            val deltaFTime = endTimeCutNanos - startTimeCutNanos
-
-            if ((deltaFTime >= 0) and (deltaFTime <= CUT_TIME)) {
-                var timeOnDistance =
-                    TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - deltaFTime)
-//                timeOnDistance = roundMilliseconds(timeOnDistance)
-                val time = convertMillisToTime(
-                    TimeUnit.SECONDS.toMillis(timeOnDistance),
-                    PATTERN_HOUR_MINUTE_SECOND,
-                    TimeZone.getTimeZone("UTC-3")
-                )
-                view.time_on_distance_text_view.text =
-                    "Время(отсечка установлена)\n\t $time"
+            var endTimeCut = 0L
+            var startTimeCut = 0L
+            try {
+                endTimeCut = TimeUnit.MILLISECONDS.toSeconds(punches[maxId].time)
+                startTimeCut = TimeUnit.MILLISECONDS.toSeconds(punches[minId].time)
+            } catch (ex: Exception) {
             }
+
+            val cutTime = endTimeCut - startTimeCut
+            val timeOnDistance = if ((cutTime >= 0) and (cutTime <= CUT_TIME)) {
+                TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - cutTime)
+            } else {
+                TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME
+            }
+
+            val time = convertMillisToTime(
+                TimeUnit.SECONDS.toMillis(timeOnDistance),
+                PATTERN_HOUR_MINUTE_SECOND,
+                TimeZone.getTimeZone("UTC-3")
+            )
+            view.time_on_distance_text_view.text =
+                "Время(отсечка установлена)\n\t $time"
         } else {
             val timeOnDistance = convertMillisToTime(
                 runningTime,
@@ -71,6 +77,13 @@ class ResultFragment(
                 "Время(отсечка не установлена)\n\t $timeOnDistance"
         }
         return builder.create()
+    }
+
+    private fun checkForCutPoint(num: Int, punches: List<Punches>): Boolean {
+        val p = punches.find {
+            it.controlPoint == num
+        }
+        return p != null
     }
 
 }
