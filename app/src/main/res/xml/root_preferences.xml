@@ -61,6 +61,7 @@
                 app:title="КП отсечки"
                 app:useSimpleSummaryProvider="true" />
         <ru.hunkel.mgrouptracker.utils.TimeZonePreference
+                android:icon="@drawable/ic_period"
                 android:key="pref_timezone"
                 android:title="Часовой пояс"
                 app:useSimpleSummaryProvider="true"/>
