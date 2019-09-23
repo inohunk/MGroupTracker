@@ -3,6 +3,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         tools:context=".activities.PunchActivity">
 
     <TextView
@@ -26,10 +27,9 @@
             android:scrollbars="vertical"
             android:layout_above="@id/end_time_text_view"
             />
-
     <TextView
             android:id="@+id/end_time_text_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
@@ -39,4 +39,17 @@
             android:textSize="28sp"
             android:textStyle="bold"
             tools:visibility="gone" />
+
+    <ImageButton
+            android:id="@+id/result_button"
+            style="@style/Widget.AppCompat.ImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/end_time_text_view"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="5dp"
+            android:layout_marginLeft="10dp"
+            android:background="@null"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_help" />
 </RelativeLayout>

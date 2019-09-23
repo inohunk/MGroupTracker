@@ -57,6 +57,14 @@ class PunchFragment : Fragment() {
             view.end_time_text_view.visibility = View.GONE
         }
         mPunchRecyclerView.adapter = PunchAdapter(punches)
+        result_button.visibility = View.VISIBLE
+        result_button.setOnClickListener {
+            val fragment = ResultFragment(
+                event,
+                punches
+            )
+            fragment.show(parentFragmentManager, "missiles")
+        }
     }
 
     private inner class PunchAdapter(private val punchList: List<Punches>) :
