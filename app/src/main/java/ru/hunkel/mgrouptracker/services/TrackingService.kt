@@ -271,6 +271,12 @@ class TrackingService : Service(), BeaconConsumer,
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mBeaconManager.isBound(this))
+            mBeaconManager.unbind(this)
+    }
+
     /*
         Functions
      */
