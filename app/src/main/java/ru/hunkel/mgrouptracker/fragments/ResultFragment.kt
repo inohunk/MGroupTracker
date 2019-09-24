@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import kotlinx.android.synthetic.main.fragment_result.view.*
 import ru.hunkel.mgrouptracker.R
 import ru.hunkel.mgrouptracker.database.entities.Event
@@ -19,45 +20,43 @@ class ResultFragment(
     private val event: Event,
     private val punches: List<Punches>
 ) : DialogFragment() {
-    private val CUT_TIME = 60*15L
+    private val CUT_TIME = 60 * 15L
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(activity!!)
         val inflater = activity!!.layoutInflater
-        var view = inflater.inflate(R.layout.fragment_result, null)
+        val view = inflater.inflate(R.layout.fragment_result, null)
         builder.setView(view)
 
-        val endTimeNanos = roundMilliseconds(event.endTime)
-        val startTimeNanos = roundMilliseconds(event.startTime)
-        val runningTime =
-            roundMilliseconds(
-                endTimeNanos - startTimeNanos
-            )
+        val endTimeSeconds = TimeUnit.MILLISECONDS.toSeconds(roundMilliseconds(event.endTime))
+        val startTimeSeconds = TimeUnit.MILLISECONDS.toSeconds(roundMilliseconds(event.startTime))
+        val runningTime = endTimeSeconds - startTimeSeconds
 
-        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
-        val cutNum = pm.getString("cutoff_number", "-1")!!.toInt()
+
+        val pm = getDefaultSharedPreferences(context)
+        val cutNumFirst = pm.getString("cutoff_point_first", "250")!!.toInt()
+        val cutNumSecond = pm.getString("cutoff_point_second", "251")!!.toInt()
         val cutEnabled = pm.getBoolean("cutoff_enabled", false)
-        if (cutEnabled and punches.isNotEmpty() and checkForCutPoint(cutNum, punches)) {
-            val minId = punches.indexOfFirst {
-                it.controlPoint == cutNum
+
+        if (cutEnabled and punches.isNotEmpty()
+            and
+            (checkForCutPoint(cutNumFirst, punches)
+                    or
+                    checkForCutPoint(cutNumSecond, punches))
+        ) {
+            val cutTimeFirst = calculateCutTime(cutNumFirst, punches)
+            val cutTimeSecond = calculateCutTime(cutNumSecond, punches)
+
+            var summaryCutTime = cutTimeFirst + cutTimeSecond
+
+            if (summaryCutTime > CUT_TIME) {
+                summaryCutTime = CUT_TIME
             }
 
-            val maxId = punches.indexOfLast {
-                it.controlPoint == cutNum
-            }
-            var endTimeCut = 0L
-            var startTimeCut = 0L
-            try {
-                endTimeCut = TimeUnit.MILLISECONDS.toSeconds(punches[maxId].time)
-                startTimeCut = TimeUnit.MILLISECONDS.toSeconds(punches[minId].time)
-            } catch (ex: Exception) {
-            }
-
-            val cutTime = endTimeCut - startTimeCut
-            val timeOnDistance = if ((cutTime >= 0) and (cutTime <= CUT_TIME)) {
-                TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME + (CUT_TIME - cutTime)
+            val timeOnDistance = if ((summaryCutTime >= 0) and (summaryCutTime <= CUT_TIME)) {
+                runningTime - summaryCutTime
             } else {
-                TimeUnit.MILLISECONDS.toSeconds(runningTime) - CUT_TIME
+                runningTime - CUT_TIME
             }
 
             val time = convertMillisToTime(
@@ -65,8 +64,14 @@ class ResultFragment(
                 PATTERN_HOUR_MINUTE_SECOND,
                 TimeZone.getTimeZone("UTC-3")
             )
+            val cutTime = convertMillisToTime(
+                TimeUnit.SECONDS.toMillis(summaryCutTime),
+                PATTERN_HOUR_MINUTE_SECOND,
+                TimeZone.getTimeZone("UTC-3")
+            )
             view.time_on_distance_text_view.text =
-                "Время(с отсечкой)\n\t $time"
+                "Время(с отсечкой)\n\t $time\n" +
+                        "Время отсечки $cutTime"
         } else {
             val timeOnDistance = convertMillisToTime(
                 runningTime,
@@ -84,6 +89,29 @@ class ResultFragment(
             it.controlPoint == num
         }
         return p != null
+    }
+
+    private fun calculateCutTime(cutNum: Int, punches: List<Punches>): Long {
+        val minId = punches.indexOfFirst {
+            it.controlPoint == cutNum
+        }
+
+        val maxId = punches.indexOfLast {
+            it.controlPoint == cutNum
+        }
+        var endTimeCut = 0L
+        var startTimeCut = 0L
+        try {
+            endTimeCut = TimeUnit.MILLISECONDS.toSeconds(roundMilliseconds(punches[maxId].time))
+            startTimeCut = TimeUnit.MILLISECONDS.toSeconds(roundMilliseconds(punches[minId].time))
+        } catch (ex: Exception) {
+        }
+
+        var cutTime = endTimeCut - startTimeCut
+        if (cutTime > CUT_TIME) {
+            cutTime = CUT_TIME
+        }
+        return cutTime
     }
 
 }

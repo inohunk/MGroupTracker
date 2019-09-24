@@ -28,10 +28,7 @@ import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.drawables.EventDrawable
 import ru.hunkel.mgrouptracker.services.TrackingService
-import ru.hunkel.mgrouptracker.utils.PATTERN_HOUR_MINUTE_SECOND
-import ru.hunkel.mgrouptracker.utils.PhoneTester
-import ru.hunkel.mgrouptracker.utils.SUCCESS
-import ru.hunkel.mgrouptracker.utils.convertMillisToTime
+import ru.hunkel.mgrouptracker.utils.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -347,7 +344,7 @@ class MainFragment : Fragment() {
                 )
             }
             start_time_text_view.text = convertMillisToTime(
-                System.currentTimeMillis(),
+                roundMilliseconds(System.currentTimeMillis()),
                 PATTERN_HOUR_MINUTE_SECOND
             )
             start_time_text_view.visibility = View.VISIBLE
