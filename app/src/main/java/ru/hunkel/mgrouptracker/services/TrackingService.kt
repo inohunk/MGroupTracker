@@ -1,9 +1,6 @@
 package ru.hunkel.mgrouptracker.services
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.*
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -17,6 +14,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,12 +23,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import ru.hunkel.mgrouptracker.ITrackingService
 import ru.hunkel.mgrouptracker.R
+import ru.hunkel.mgrouptracker.activities.HostActivity
 import ru.hunkel.mgrouptracker.database.entities.Punches
 import ru.hunkel.mgrouptracker.database.utils.DatabaseManager
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_ACTION
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_TYPE
 import ru.hunkel.mgrouptracker.fragments.BROADCAST_TYPE_FIX_TIME
-import ru.hunkel.mgrouptracker.fragments.MainFragment
 import ru.hunkel.mgrouptracker.managers.TimeManager
 import ru.hunkel.mgrouptracker.network.DataSender
 import ru.hunkel.mgrouptracker.receivers.NetworkStateReceiver
@@ -85,6 +83,9 @@ class TrackingService : Service(), BeaconConsumer,
     private var updateControlPointAfter = DEFAULT_CONTROL_POINT_UPDATE
 
     private var mTrackingState = STATE_OFF
+
+    //Network
+    private val mDataSender = DataSender(this)
 
     private var mServerUrl = ""
 
@@ -417,7 +418,7 @@ class TrackingService : Service(), BeaconConsumer,
 
     private fun sendPunches() {
         //TODO check server url for availability
-        if (isConnected() and mTimeSynchronized and mServerUrlGetted) {
+        if (mTimeSynchronized and mServerUrlGetted and DataSender.isNetworkConnected(this)) {
             val jsonString = createJsonByPunchList()
 
             if (mServerUrl != "") {
@@ -433,7 +434,7 @@ class TrackingService : Service(), BeaconConsumer,
                     }
                 }
             }
-        } else if (isConnected().not()) {
+        } else if (DataSender.isNetworkConnected(this).not()) {
             if (!mNetworkStateReceiverRegistered) {
                 //TODO rewrite with network callback
                 NetworkStateReceiver.networkStateReceiverListener = this
@@ -632,20 +633,5 @@ class TrackingService : Service(), BeaconConsumer,
 
     private fun stopOGPSCenterService() {
         unbindService(mOGPSCenterServiceConnection)
-    }
-
-    override fun onNetworkConnectionChanged(isConnected: Boolean) {
-        if (isConnected) {
-            sendPunches()
-            Log.i(
-                TAG_NETWORK,
-                "Network Broadcast Receiver: CONNECTION ESTABLISHED. TRYING TO SEND AGAIN."
-            )
-        }
-    }
-
-    private fun isConnected(): Boolean {
-        val networkInfo = mConnectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
     }
 }

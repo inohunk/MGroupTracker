@@ -1,5 +1,9 @@
 package ru.hunkel.mgrouptracker.network
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -9,7 +13,37 @@ import java.net.URL
 
 const val TAG = "DataSender"
 
-class DataSender {
+class DataSender(private val context: Context) {
+
+    companion object {
+        @JvmStatic
+        fun isNetworkConnected(context: Context): Boolean {
+            val mConnectivityManager: ConnectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+            var result = false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mConnectivityManager.getNetworkCapabilities(mConnectivityManager.activeNetwork)
+                    ?.run {
+                        result = when {
+                            hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                            hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                            hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                            else -> false
+                        }
+                    }
+            } else {
+                mConnectivityManager.activeNetworkInfo.run {
+                    result = when (type) {
+                        ConnectivityManager.TYPE_WIFI -> true
+                        ConnectivityManager.TYPE_MOBILE -> true
+                        else -> false
+                    }
+                }
+            }
+            return result
+        }
+    }
 
     fun sendPunchesAsync(jsonPunches: String, uploadUrl: String): Deferred<Boolean> =
         CoroutineScope(Dispatchers.Default).async {
