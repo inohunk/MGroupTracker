@@ -295,9 +295,11 @@ class TrackingService : Service(), BeaconConsumer,
         mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         mBuilder!!.setSmallIcon(R.drawable.ic_main_icon)
         mBuilder!!.setContentTitle("Соревнование идет!")
-        val intent = Intent(this, MainFragment::class.java)
+        val intent = Intent(this, HostActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+            this, 0, intent, 0
         )
 
         mBuilder!!.setContentIntent(pendingIntent)
