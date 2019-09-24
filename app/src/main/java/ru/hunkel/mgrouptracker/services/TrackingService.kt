@@ -75,7 +75,6 @@ class TrackingService : Service(), BeaconConsumer,
 
     private lateinit var mNotificationManager: NotificationManager
 
-
     //Database
     private lateinit var mDatabaseManager: DatabaseManager
 
@@ -91,6 +90,14 @@ class TrackingService : Service(), BeaconConsumer,
 
     private var mServerUrlGetted = false
 
+    //Network state receiver
+    private val mNetworkStateReceiver = NetworkStateReceiver()
+
+    private var mNetworkStateReceiverRegistered = false
+
+    //Time
+    private lateinit var mTimeManager: TimeManager
+
     private var mTimeSynchronized = false
 
     //Collections
@@ -98,10 +105,6 @@ class TrackingService : Service(), BeaconConsumer,
     private val mPunches = LinkedList<Punches>()
 
     private var mPunchUpdateState = PUNCH_UPDATE_STATE_ADD
-
-    //Objects
-    private lateinit var mTimeManager: TimeManager
-    private val mDataSender = DataSender()
 
     //LOCATION SERVICE
     var locationService: ILocationService? = null
@@ -153,12 +156,6 @@ class TrackingService : Service(), BeaconConsumer,
         }
     }
 
-    //Network state receiver
-    private val mNetworkStateReceiver = NetworkStateReceiver()
-    private var mNetworkStateReceiverRegistered = false
-
-    private lateinit var mConnectivityManager: ConnectivityManager
-
     /*
         INNER CLASSES
     */
@@ -181,14 +178,9 @@ class TrackingService : Service(), BeaconConsumer,
         }
     }
 
-    override fun onTimeChanged(time: Long) {
-        fixTimeInDatabase()
-        mTimeSynchronized = true
-    }
     /*
         Override functions
     */
-
     override fun onCreate() {
         mTimeManager = TimeManager(this)
         TimeManager.sTimeChangedListener = this
@@ -198,12 +190,8 @@ class TrackingService : Service(), BeaconConsumer,
 
         initBeaconManager()
         startOnClick()
-        startLocationService()
+//        startLocationService()
         startOGPSCenterService()
-
-        mConnectivityManager =
-            this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -213,7 +201,7 @@ class TrackingService : Service(), BeaconConsumer,
     override fun onBeaconServiceConnect() {
         mBeaconManager.removeAllRangeNotifiers()
 
-        val pm = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+        val pm = getDefaultSharedPreferences(this)
 
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
@@ -278,6 +266,21 @@ class TrackingService : Service(), BeaconConsumer,
             mBeaconManager.unbind(this)
     }
 
+    override fun onNetworkConnectionChanged(isConnected: Boolean) {
+        if (isConnected) {
+            sendPunches()
+            Log.i(
+                TAG_NETWORK,
+                "Network Broadcast Receiver: CONNECTION ESTABLISHED. TRYING TO SEND AGAIN."
+            )
+        }
+    }
+
+    override fun onTimeChanged(time: Long) {
+        fixTimeInDatabase()
+        mTimeSynchronized = true
+    }
+
     /*
         Functions
      */
@@ -313,7 +316,10 @@ class TrackingService : Service(), BeaconConsumer,
             mBuilder!!.build(),
             NOTIFICATION_STATE_ID
         )
-        mNotificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
+        val notification = mBuilder!!.build()
+        notification!!.flags = Notification.FLAG_NO_CLEAR
+
+        mNotificationManager.notify(NOTIFICATION_STATE_ID, notification)
     }
 
 
@@ -353,16 +359,12 @@ class TrackingService : Service(), BeaconConsumer,
             mBuilder!!.setChannelId(channel.id)
         }
 
-
-//        notificationManager.notify(NOTIFICATION_STATE_ID, mBuilder!!.build())
-
         notificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
     }
 
 
     private fun checkInList(cp: Int) {
-        //TODO if checking fix
         val newPunch = Punches(
             eventId = mDatabaseManager.actionGetLastEvent().id,
             time = mTimeManager.getTime(),
@@ -421,22 +423,20 @@ class TrackingService : Service(), BeaconConsumer,
         if (mTimeSynchronized and mServerUrlGetted and DataSender.isNetworkConnected(this)) {
             val jsonString = createJsonByPunchList()
 
-            if (mServerUrl != "") {
                 CoroutineScope(Dispatchers.Default).launch {
-                    //        mDataSender.sendPunches(jsonString, "http://192.168.43.150:2023/")
-//                    mDataSender.sendPunches(jsonString, "https://postman-echo.com/post"){
+                    //                    mDataSender.sendPunches(jsonString, "https://postman-echo.com/post"){
 //                    if (mDataSender.sendPunchesAsync(jsonString, "https://postman-echo.com/get").await()){
+//                    if (mDataSender.sendPunchesAsync(jsonString, "http://192.168.43.150:2023/").await()){
                     if (mDataSender.sendPunchesAsync(jsonString, mServerUrl).await()) {
                         Log.i(TAG_NETWORK, "POSTED")
                     } else {
                         Log.i(TAG_NETWORK, "NOT POSTED")
                         //TODO write timer task
                     }
+
                 }
-            }
         } else if (DataSender.isNetworkConnected(this).not()) {
             if (!mNetworkStateReceiverRegistered) {
-                //TODO rewrite with network callback
                 NetworkStateReceiver.networkStateReceiverListener = this
                 registerReceiver(
                     mNetworkStateReceiver,
