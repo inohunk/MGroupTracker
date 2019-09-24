@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
+import ru.hunkel.mgrouptracker.utils.roundMilliseconds
 
 const val TAG_TIME_MANAGER = "TimeManager"
 
@@ -71,11 +72,11 @@ class TimeManager(private val context: Context) : LocationListener {
     }
 
     private fun getTimeFromSystem(): Long {
-        return System.currentTimeMillis()
+        return roundMilliseconds(System.currentTimeMillis())
     }
 
     override fun onLocationChanged(location: Location?) {
-        mDeltaTime = location!!.time - System.currentTimeMillis()
+        mDeltaTime = location!!.time - getTimeFromSystem()
         mTime = location.time
         if (sTimeChangedListener != null) {
             sTimeChangedListener!!.onTimeChanged(mTime)
