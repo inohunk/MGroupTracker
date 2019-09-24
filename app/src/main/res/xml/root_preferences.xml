@@ -52,13 +52,20 @@
         <CheckBoxPreference
                 android:enabled="true"
                 android:key="cutoff_enabled"
-                android:title="Включено"/>
+                android:title="Включить отсечку по КП" />
         <EditTextPreference
                 android:dependency="cutoff_enabled"
                 android:icon="@drawable/ic_update_parameter"
                 app:defaultValue="250"
-                app:key="cutoff_number"
-                app:title="КП отсечки"
+                app:key="cutoff_point_first"
+                app:title="КП отсечки 1"
+                app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+                android:dependency="cutoff_enabled"
+                android:icon="@drawable/ic_update_parameter"
+                app:defaultValue="251"
+                app:key="cutoff_point_second"
+                app:title="КП отсечки 2"
                 app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>
