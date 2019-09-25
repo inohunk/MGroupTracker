@@ -32,7 +32,6 @@ class ResultFragment(
         val startTimeSeconds = TimeUnit.MILLISECONDS.toSeconds(roundMilliseconds(event.startTime))
         val runningTime = endTimeSeconds - startTimeSeconds
 
-
         val pm = getDefaultSharedPreferences(context)
         val cutNumFirst = pm.getString("cutoff_point_first", "250")!!.toInt()
         val cutNumSecond = pm.getString("cutoff_point_second", "251")!!.toInt()
@@ -70,8 +69,8 @@ class ResultFragment(
                 TimeZone.getTimeZone("UTC-3")
             )
             view.time_on_distance_text_view.text =
-                "Время(с отсечкой)\n\t $time\n" +
-                        "Время отсечки $cutTime"
+                "Время на дистанции\n\t $time\n" +
+                        "Время отсечки\n\t $cutTime"
         } else {
             val timeOnDistance = convertMillisToTime(
                 runningTime * 1000,
