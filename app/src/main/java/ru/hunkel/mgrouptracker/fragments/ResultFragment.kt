@@ -74,7 +74,7 @@ class ResultFragment(
                         "Время отсечки $cutTime"
         } else {
             val timeOnDistance = convertMillisToTime(
-                runningTime,
+                runningTime * 1000,
                 PATTERN_HOUR_MINUTE_SECOND,
                 TimeZone.getTimeZone("UTC-3")
             )
