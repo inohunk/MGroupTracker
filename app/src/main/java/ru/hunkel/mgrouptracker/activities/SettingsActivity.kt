@@ -33,7 +33,7 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
-            findPreference<Preference>("about")!!.title = "version ${BuildConfig.VERSION_NAME}"
+            findPreference<Preference>("about")!!.title = "Version ${BuildConfig.VERSION_NAME}"
         }
     }
 }
