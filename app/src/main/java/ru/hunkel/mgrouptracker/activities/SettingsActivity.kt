@@ -3,7 +3,9 @@ package ru.hunkel.mgrouptracker.activities
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import ru.hunkel.mgrouptracker.BuildConfig
 import ru.hunkel.mgrouptracker.R
 
 class SettingsActivity : AppCompatActivity() {
@@ -31,6 +33,7 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
+            findPreference<Preference>("about")!!.title = "version ${BuildConfig.VERSION_NAME}"
         }
     }
 }

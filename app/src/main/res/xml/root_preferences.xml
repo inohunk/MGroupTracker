@@ -68,4 +68,8 @@
                 app:title="КП отсечки 2"
                 app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
+    <Preference
+            android:key="about"
+            android:title="Version name" />
+
 </androidx.preference.PreferenceScreen>
