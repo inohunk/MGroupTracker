@@ -425,18 +425,17 @@ class TrackingService : Service(), BeaconConsumer,
         if (mTimeSynchronized and mServerUrlGetted and DataSender.isNetworkConnected(this)) {
             val jsonString = createJsonByPunchList()
 
-                CoroutineScope(Dispatchers.Default).launch {
-                    //                    mDataSender.sendPunches(jsonString, "https://postman-echo.com/post"){
-//                    if (mDataSender.sendPunchesAsync(jsonString, "https://postman-echo.com/get").await()){
+            CoroutineScope(Dispatchers.Default).launch {
+                //                    if (mDataSender.sendPunchesAsync(jsonString, "https://postman-echo.com/get").await()){
 //                    if (mDataSender.sendPunchesAsync(jsonString, "http://192.168.43.150:2023/").await()){
-                    if (mDataSender.sendPunchesAsync(jsonString, mServerUrl).await()) {
-                        Log.i(TAG_NETWORK, "POSTED")
-                    } else {
-                        Log.i(TAG_NETWORK, "NOT POSTED")
-                        //TODO write timer task
-                    }
-
+                if (mDataSender.sendPunchesAsync(jsonString, mServerUrl).await()) {
+                    Log.i(TAG_NETWORK, "POSTED")
+                } else {
+                    Log.i(TAG_NETWORK, "NOT POSTED")
+                    //TODO write timer task
                 }
+
+            }
         } else if (DataSender.isNetworkConnected(this).not()) {
             if (!mNetworkStateReceiverRegistered) {
                 NetworkStateReceiver.networkStateReceiverListener = this

@@ -69,7 +69,7 @@ class DataSender(private val context: Context) {
 
                     Log.i(TAG, "response code: ${mConnection.responseCode}")
                     when (mConnection.responseCode) {
-                        200, 201 -> {
+                        HttpURLConnection.HTTP_OK -> {
                             val result = runBlocking {
                                 handleCorrectResponse(mConnection.inputStream)
                             }
