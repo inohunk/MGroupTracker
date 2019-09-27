@@ -88,7 +88,7 @@ class TrackingService : Service(), BeaconConsumer,
 
     private var mServerUrl = ""
 
-    private var mServerUrlGetted = false
+    private var mServerUrlReceived = false
 
     //Network state receiver
     private val mNetworkStateReceiver = NetworkStateReceiver()
@@ -141,15 +141,15 @@ class TrackingService : Service(), BeaconConsumer,
             try {
                 mServerUrl = mGpsService!!.punchesUploadUrl
                 Log.i(TAG_OGPSCENTER, "ogps url: " + mGpsService!!.punchesUploadUrl)
-                mServerUrlGetted = true
+                mServerUrlReceived = true
 
             } catch (ex: Exception) {
-                mServerUrlGetted = false
+                mServerUrlReceived = false
             }
             Log.i(
                 TAG_OGPSCENTER, ".\nogpscenter connected" +
                         "\ncomponent name: ${name.toString()}" +
-                        "\nurl getted: $mServerUrlGetted"
+                        "\nurl getted: $mServerUrlReceived"
             )
             stopOGPSCenterService()
 
@@ -422,7 +422,7 @@ class TrackingService : Service(), BeaconConsumer,
 
     private fun sendPunches() {
         //TODO check server url for availability
-        if (mTimeSynchronized and mServerUrlGetted and DataSender.isNetworkConnected(this)) {
+        if (mTimeSynchronized and mServerUrlReceived and DataSender.isNetworkConnected(this)) {
             val jsonString = createJsonByPunchList()
 
             CoroutineScope(Dispatchers.Default).launch {
