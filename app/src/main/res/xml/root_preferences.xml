@@ -38,7 +38,7 @@
             android:icon="@drawable/ic_update_parameter"
             app:defaultValue="300"
             app:key="beacon_update_interval"
-            app:title="Обновить время КП после(секунды)"
+            app:title="Обновить отметку после(секунды)"
             app:useSimpleSummaryProvider="true" />
     <ListPreference
             android:defaultValue="2"
@@ -46,7 +46,7 @@
             android:entryValues="@array/update_parameters_values"
             android:icon="@drawable/ic_update_parameter"
             android:key="update_punch_params"
-            android:title="Параметры обновления метки"
+            android:title="Метод обновления отметки"
             app:useSimpleSummaryProvider="true" />
     <PreferenceCategory android:title="Дополнительно">
         <CheckBoxPreference
