@@ -148,6 +148,25 @@ class MainFragment : Fragment() {
         context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (mServiceBounded) {
+            start_time_text_view.text = convertMillisToTime(
+                mDbManager.actionGetLastEvent().startTime,
+                PATTERN_HOUR_MINUTE_SECOND
+            )
+            start_time_text_view.visibility = View.VISIBLE
+            end_time_text_view.visibility = View.GONE
+            result_button.visibility = View.GONE
+            updateUIWithCurrentState(true)
+            mPunchAdapter.updateItems(
+                mDbManager.actionGetPunchesByEventIdWithAscSorting(
+                    mDbManager.actionGetLastEvent().id
+                )
+            )
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.overflow_menu, menu)
         return super.onCreateOptionsMenu(menu, inflater)
