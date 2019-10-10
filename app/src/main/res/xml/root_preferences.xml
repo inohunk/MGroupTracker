@@ -28,12 +28,12 @@
             app:key="beacon_scan_period"
             app:title="Период сканирования(секунды)"
             app:useSimpleSummaryProvider="true" />
-    <EditTextPreference
+    <!--<EditTextPreference
             android:icon="@drawable/ic_period"
             app:defaultValue="0"
             app:key="beacon_between_scan_period"
             app:title="Промежуток сканирования(секунды)"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true" />-->
     <EditTextPreference
             android:icon="@drawable/ic_update_parameter"
             app:defaultValue="300"

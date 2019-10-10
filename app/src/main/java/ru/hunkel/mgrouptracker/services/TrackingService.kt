@@ -205,8 +205,9 @@ class TrackingService : Service(), BeaconConsumer,
 
         val distance = pm.getString("beacon_distance", "4.5")!!.toFloat()
         val scanPeriod = (pm.getString("beacon_scan_period", "1")!!.toFloat() * 1000).toLong()
-        val betweenScanPeriod =
-            (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
+//        val betweenScanPeriod =
+//            (pm.getString("beacon_between_scan_period", "0")!!.toFloat() * 1000).toLong()
+        val betweenScanPeriod = 0L
         mPunchUpdateState =
             (pm.getString("update_punch_params", "0"))!!.toInt()
         updateControlPointAfter =
