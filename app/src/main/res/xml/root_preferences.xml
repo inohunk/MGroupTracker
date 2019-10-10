@@ -26,7 +26,7 @@
             android:icon="@drawable/ic_period"
             app:defaultValue="1"
             app:key="beacon_scan_period"
-            app:title="Период сканирования(секунды)"
+            app:title="Частота сканирования(секунды)"
             app:useSimpleSummaryProvider="true" />
     <!--<EditTextPreference
             android:icon="@drawable/ic_period"
