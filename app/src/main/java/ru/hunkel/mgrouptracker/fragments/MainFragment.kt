@@ -37,6 +37,7 @@ const val BROADCAST_ACTION = "ru.hunkel.mgrouptracker.activities"
 
 const val BROADCAST_TYPE = "type"
 const val BROADCAST_TYPE_FIX_TIME = 1
+const val BROADCAST_TYPE_STOP_TEST_SERVICE = 2
 
 const val EXTRA_CONTROL_POINT = "broadcastControlPoint"
 
@@ -70,9 +71,52 @@ class MainFragment : Fragment() {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mTrackingService = ITrackingService.Stub.asInterface(service)
+            mTrackingService!!.startEvent()
             mServiceBounded = true
         }
     }
+
+    private val mTestTrackingServiceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            mTrackingService = ITrackingService.Stub.asInterface(service)
+            context!!.sendBroadcast(
+                Intent(
+                    BROADCAST_ACTION
+                ).putExtra(BROADCAST_TYPE, BROADCAST_TYPE_STOP_TEST_SERVICE)
+
+            )
+        }
+    }
+
+    private class TestTask(
+        val context: Context,
+        val mTestTrackingServiceConnection: ServiceConnection
+    ) : TimerTask() {
+        override fun run() {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                val serviceIntent =
+                    Intent(context, TrackingService::class.java)
+                context.apply {
+                    startService(serviceIntent)
+                    bindService(
+                        serviceIntent,
+                        mTestTrackingServiceConnection,
+                        Context.BIND_WAIVE_PRIORITY
+                    )
+                }
+            }
+        }
+    }
+
+    private var timer = Timer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,6 +182,9 @@ class MainFragment : Fragment() {
                                     mDbManager.actionGetLastEvent().id
                                 )
                             )
+                        }
+                        BROADCAST_TYPE_STOP_TEST_SERVICE -> {
+                            context?.unbindService(mTestTrackingServiceConnection)
                         }
                     }
                 } catch (ex: Exception) {
@@ -229,6 +276,9 @@ class MainFragment : Fragment() {
         }
         updateUIWithCurrentState(false)
         mServiceBounded = false
+//        startServiceTask.cancel()
+//        timer.cancel()
+        timer.purge()
     }
 
     private fun updateUIWithCurrentState(state: Boolean) {
@@ -371,6 +421,8 @@ class MainFragment : Fragment() {
             result_button.visibility = View.GONE
             updateUIWithCurrentState(true)
             mPunchAdapter.clear()
+            timer.purge()
+            timer.schedule(TestTask(context!!, mTestTrackingServiceConnection), 0, 300000)
         }
     }
 
