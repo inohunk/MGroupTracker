@@ -18,8 +18,6 @@ class TimeManager(private val context: Context) : LocationListener {
     private var mTime = 0L
     private var mDeltaTime = 0L
 
-    private var MILLIS_IN_DAY = 1000 * 60 * 60 * 24
-
     interface TimeChangedListener {
         fun onTimeChanged(time: Long)
     }
