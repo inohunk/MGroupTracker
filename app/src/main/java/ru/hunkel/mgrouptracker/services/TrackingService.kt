@@ -162,7 +162,6 @@ class TrackingService : Service(), BeaconConsumer,
     inner class TrackingServiceImpl : ITrackingService.Stub() {
         override fun startEvent() {
             initBeaconManager()
-            mDatabaseManager.actionStartEvent(mTimeManager.getTime())
             startOnClick()
         }
 
