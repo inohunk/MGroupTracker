@@ -161,6 +161,7 @@ class TrackingService : Service(), BeaconConsumer,
     */
     inner class TrackingServiceImpl : ITrackingService.Stub() {
         override fun startEvent() {
+            initBeaconManager()
             mDatabaseManager.actionStartEvent(mTimeManager.getTime())
             startOnClick()
         }
@@ -188,8 +189,8 @@ class TrackingService : Service(), BeaconConsumer,
         mNotificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        initBeaconManager()
-        startOnClick()
+//        initBeaconManager()
+//        startOnClick()
 //        startLocationService()
         startOGPSCenterService()
     }
