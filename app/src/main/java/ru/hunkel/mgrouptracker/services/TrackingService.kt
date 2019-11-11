@@ -265,6 +265,7 @@ class TrackingService : Service(), BeaconConsumer,
         super.onDestroy()
         if (mBeaconManager.isBound(this))
             mBeaconManager.unbind(this)
+        mNotificationManager.cancelAll()
     }
 
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
@@ -321,7 +322,6 @@ class TrackingService : Service(), BeaconConsumer,
         )
         val notification = mBuilder!!.build()
         notification!!.flags = Notification.FLAG_NO_CLEAR
-
         mNotificationManager.notify(NOTIFICATION_STATE_ID, notification)
     }
 
