@@ -21,11 +21,12 @@ class HostActivity : AppCompatActivity() {
         val fragment = getCurrentFragment(supportFragmentManager)
 
         if (fragment is MainFragment) {
-            if (!MainFragment.mServiceBounded) {
+            if (MainFragment.mServiceBounded.not()) {
                 cBackButtonPressed++
                 if (cBackButtonPressed == 2) {
                     super.onBackPressed()
                 } else {
+                    // If user will press on back button in next 3 seconds, app's closed
                     Timer().schedule(object : TimerTask() {
                         override fun run() {
                             cBackButtonPressed = 0

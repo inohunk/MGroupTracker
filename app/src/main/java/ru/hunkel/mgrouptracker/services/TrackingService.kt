@@ -107,26 +107,6 @@ class TrackingService : Service(), BeaconConsumer,
 
     private var mPunchUpdateState = PUNCH_UPDATE_STATE_ADD
 
-    //LOCATION SERVICE
-    var locationService: ILocationService? = null
-    var isServiceConnected = false
-
-    private val locationServiceConnection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName?) {
-            locationService = null
-            Log.i(TAG, "locationService disconnected")
-        }
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            locationService = ILocationService.Stub.asInterface(service)
-            isServiceConnected = true
-            Log.i(
-                TAG, "locationService connected" +
-                        "\ncomponent name: ${name.toString()}"
-            )
-        }
-    }
-
     //OGPSCenter service connection
     var mGpsService: IGPSTrackerServiceRemote? = null
 
@@ -162,7 +142,6 @@ class TrackingService : Service(), BeaconConsumer,
     */
     inner class TrackingServiceImpl : ITrackingService.Stub() {
         override fun startEvent() {
-            initBeaconManager()
             startOnClick()
         }
 
@@ -170,7 +149,6 @@ class TrackingService : Service(), BeaconConsumer,
             val endTime = mTimeManager.getTime()
             mDatabaseManager.actionStopEvent(endTime)
             stopOnClick()
-            stopLocationService()
             return endTime
         }
 
@@ -189,9 +167,6 @@ class TrackingService : Service(), BeaconConsumer,
         mNotificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-//        initBeaconManager()
-//        startOnClick()
-//        startLocationService()
         startOGPSCenterService()
     }
 
@@ -386,7 +361,7 @@ class TrackingService : Service(), BeaconConsumer,
 
             if ((currentTime - punch.time > updateControlPointAfter) and (mPunchUpdateState != PUNCH_UPDATE_STATE_NOTHING)) {
 
-                val time = getTimeFromService(cp)
+                val time = getTimeFromService()
                 punch.time = time
                 Log.i(
                     TAG_BEACON, "Beacon $cp time updated - ${convertMillisToTime(
@@ -414,7 +389,7 @@ class TrackingService : Service(), BeaconConsumer,
                 Log.i(TAG, "else")
             }
         } else {
-            val time = getTimeFromService(cp)
+            val time = getTimeFromService()
             newPunch.time = time
             mPunchesIdentifiers.add(cp)
             mPunches.add(newPunch)
@@ -507,13 +482,7 @@ class TrackingService : Service(), BeaconConsumer,
         return jsonArray.toString()
     }
 
-    private fun getTimeFromService(cp: Int): Long {
-        return if (isServiceConnected) {
-            locationService!!.punch(cp)
-        } else {
-            mTimeManager.getTime()
-        }
-    }
+    private fun getTimeFromService() = mTimeManager.getTime()
 
     private fun findPunchByControlPoint(cp: Int): Punches {
         var punch = Punches(0, 0, 0, 0)
@@ -528,6 +497,8 @@ class TrackingService : Service(), BeaconConsumer,
 
     fun startOnClick() {
         mPunchesIdentifiers.clear()
+
+        initBeaconManager()
         mBeaconManager.bind(this)
 
         createNotification()
@@ -601,32 +572,6 @@ class TrackingService : Service(), BeaconConsumer,
         val broadcastIntent = Intent(BROADCAST_ACTION)
         broadcastIntent.putExtra(BROADCAST_TYPE, BROADCAST_TYPE_FIX_TIME)
         sendBroadcast(broadcastIntent)
-    }
-
-    private fun startLocationService() {
-        val serviceIntent = Intent()
-        serviceIntent.component = ComponentName(
-            "ru.hunkel.servicesipc",
-            "ru.hunkel.servicesipc.services.LocationService"
-        )
-        try {
-            val res = bindService(
-                serviceIntent,
-                locationServiceConnection,
-                Context.BIND_WAIVE_PRIORITY
-            )
-            Log.i(TAG, "Service started: $res")
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
-        }
-    }
-
-    private fun stopLocationService() {
-        if (isServiceConnected) {
-            locationService!!.stopTracking()
-            unbindService(locationServiceConnection)
-            isServiceConnected = false
-        }
     }
 
     private fun startOGPSCenterService() {
