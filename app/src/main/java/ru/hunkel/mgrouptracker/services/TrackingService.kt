@@ -4,6 +4,7 @@ import android.app.*
 import android.content.*
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.media.RingtoneManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
@@ -33,7 +34,6 @@ import ru.hunkel.mgrouptracker.managers.TimeManager
 import ru.hunkel.mgrouptracker.network.DataSender
 import ru.hunkel.mgrouptracker.receivers.NetworkStateReceiver
 import ru.hunkel.mgrouptracker.utils.*
-import ru.hunkel.servicesipc.ILocationService
 import ru.ogpscenter.ogpstracker.service.IGPSTrackerServiceRemote
 import java.util.*
 import kotlin.math.abs
@@ -72,8 +72,9 @@ class TrackingService : Service(), BeaconConsumer,
 
     //Notifications
     private var mBuilder: NotificationCompat.Builder? = null
-
     private lateinit var mNotificationManager: NotificationManager
+    private var mDefaultNotificationRingtoneUri: Uri =
+        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
     //Database
     private lateinit var mDatabaseManager: DatabaseManager
@@ -344,25 +345,30 @@ class TrackingService : Service(), BeaconConsumer,
 
     private fun createNotificationForControlPoint(controlPoint: Int) {
         mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+
         mBuilder!!.setSmallIcon(R.drawable.ic_control_point)
         mBuilder!!.setLargeIcon(getBitmap(this, R.drawable.ic_control_point))
         mBuilder!!.setContentTitle("Новый контрольный пункт!")
+        mBuilder!!.setVibrate(longArrayOf(1000, 1000, 1000))
         mBuilder!!.setContentText("$controlPoint")
-        mBuilder!!.setSound(Uri.parse("android.resource://ru.hunkel.mgrouptracker/" + R.raw.notification_sound))
-        mBuilder!!.setDefaults(NotificationCompat.DEFAULT_VIBRATE)
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        mBuilder!!.priority = NotificationCompat.PRIORITY_MAX
+
+        if (mDefaultNotificationRingtoneUri != null) {
+            mBuilder?.setSound(mDefaultNotificationRingtoneUri)
+        }
+
+        mBuilder!!.setDefaults(NotificationCompat.DEFAULT_ALL)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
                 NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT
             )
-            notificationManager.createNotificationChannel(channel)
+            mNotificationManager.createNotificationChannel(channel)
             mBuilder!!.setChannelId(channel.id)
         }
 
-        notificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
+        mNotificationManager.notify(NOTIFICATION_CONTROL_POINT_ID, mBuilder!!.build())
 
     }
 
