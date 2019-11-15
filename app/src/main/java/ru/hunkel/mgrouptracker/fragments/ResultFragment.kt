@@ -36,7 +36,7 @@ class ResultFragment(
             TimeZone.getTimeZone("UTC-3")
         )
         view.time_on_distance_text_view.text =
-            "Время\n\t $timeOnDistance"
+            "Время\n$timeOnDistance"
         return builder.create()
     }
 }
