@@ -92,9 +92,11 @@ class MainFragment : Fragment() {
         }
     }
 
-    private class TestTask(
+    private var mTimer = Timer()
+
+    private class DoNotSleepTask(
         val context: Context,
-        val mTestTrackingServiceConnection: ServiceConnection
+        val doNotSleepServiceConnection: ServiceConnection
     ) : TimerTask() {
         override fun run() {
             if (ContextCompat.checkSelfPermission(
@@ -108,15 +110,13 @@ class MainFragment : Fragment() {
                     startService(serviceIntent)
                     bindService(
                         serviceIntent,
-                        mTestTrackingServiceConnection,
+                        doNotSleepServiceConnection,
                         Context.BIND_WAIVE_PRIORITY
                     )
                 }
             }
         }
     }
-
-    private var timer = Timer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -276,9 +276,7 @@ class MainFragment : Fragment() {
         }
         updateUIWithCurrentState(false)
         mServiceBounded = false
-//        startServiceTask.cancel()
-//        timer.cancel()
-        timer.purge()
+        mTimer.purge()
     }
 
     private fun updateUIWithCurrentState(state: Boolean) {
@@ -421,8 +419,8 @@ class MainFragment : Fragment() {
             result_button.visibility = View.GONE
             updateUIWithCurrentState(true)
             mPunchAdapter.clear()
-            timer.purge()
-            timer.schedule(TestTask(context!!, mTestTrackingServiceConnection), 0, 300000)
+            mTimer.purge()
+            mTimer.schedule(DoNotSleepTask(context!!, mTestTrackingServiceConnection), 0, 300000)
         }
     }
 
