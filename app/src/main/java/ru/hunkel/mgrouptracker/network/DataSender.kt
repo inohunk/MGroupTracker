@@ -10,6 +10,7 @@ import org.json.JSONObject
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
 const val TAG = "DataSender"
 
@@ -45,9 +46,13 @@ class DataSender(private val context: Context) {
         }
     }
 
+    private val networkCoroutineJob: Job = Job()
+    private val networkCoroutineContext: CoroutineContext =
+        Dispatchers.Default + networkCoroutineJob
+
     fun sendPunchesAsync(jsonPunches: String, uploadUrl: String): Deferred<Boolean> =
-        CoroutineScope(Dispatchers.Default).async {
-            var sended = false
+        CoroutineScope(networkCoroutineContext).async {
+            var posted = false
             try {
                 val mConnection = URL(uploadUrl).openConnection() as HttpURLConnection
                 Log.i(TAG, "=====================================================")
@@ -74,7 +79,7 @@ class DataSender(private val context: Context) {
                                 handleCorrectResponse(mConnection.inputStream)
                             }
                             if (result) {
-                                sended = true
+                                posted = true
                             }
                             Log.i(TAG, "response message: $result")
                         }
@@ -82,14 +87,14 @@ class DataSender(private val context: Context) {
                             val result = runBlocking {
                                 handleIncorrectResponse(mConnection.errorStream)
                             }
-                            Log.i(TAG, "response message: $result")
+                            Log.i(TAG, "error message: $result")
                         }
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Exception in uploadPoints", e) //NON-NLS
             }
-            sended
+            posted
         }
 
     private fun handleCorrectResponse(stream: InputStream): Boolean {

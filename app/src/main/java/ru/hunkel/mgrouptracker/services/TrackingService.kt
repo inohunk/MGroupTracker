@@ -404,6 +404,7 @@ class TrackingService : Service(), BeaconConsumer,
 
     private fun sendPunches() {
         //TODO check server url for availability
+//        if (mServerUrlReceived and DataSender.isNetworkConnected(this)) { // for testing
         if (mTimeSynchronized and mServerUrlReceived and DataSender.isNetworkConnected(this)) {
             val jsonString = createJsonByPunchList()
 
