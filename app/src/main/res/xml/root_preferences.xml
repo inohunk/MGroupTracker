@@ -17,12 +17,14 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <EditTextPreference
+            android:dialogLayout="@layout/preference_edit_text_view"
             android:icon="@drawable/ic_distance"
-            app:defaultValue="3"
+            app:defaultValue="20"
             app:key="beacon_distance"
             app:title="Дистанция обнаружения(метры)"
             app:useSimpleSummaryProvider="true" />
     <EditTextPreference
+            android:dialogLayout="@layout/preference_edit_text_view"
             android:icon="@drawable/ic_period"
             app:defaultValue="1"
             app:key="beacon_scan_period"
@@ -35,13 +37,14 @@
             app:title="Промежуток сканирования(секунды)"
             app:useSimpleSummaryProvider="true" />-->
     <EditTextPreference
+            android:dialogLayout="@layout/preference_edit_text_view"
             android:icon="@drawable/ic_update_parameter"
             app:defaultValue="300"
             app:key="beacon_update_interval"
             app:title="Обновить отметку после(секунды)"
             app:useSimpleSummaryProvider="true" />
     <ListPreference
-            android:defaultValue="2"
+            android:defaultValue="0"
             android:entries="@array/update_parameters_titles"
             android:entryValues="@array/update_parameters_values"
             android:icon="@drawable/ic_update_parameter"
