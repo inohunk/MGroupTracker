@@ -2,6 +2,7 @@ package ru.hunkel.mgrouptracker.fragments
 
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
 import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.bluetooth.BluetoothAdapter
@@ -13,6 +14,7 @@ import android.os.IBinder
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -192,7 +194,11 @@ class MainFragment : Fragment() {
                 }
             }
         }
-        context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
+        try {
+            context!!.registerReceiver(mBroadcastReceiver, IntentFilter(BROADCAST_ACTION))
+        } catch (ex: java.lang.Exception) {
+
+        }
     }
 
     override fun onResume() {
@@ -250,11 +256,51 @@ class MainFragment : Fragment() {
     }
 
     private fun startServiceOnClick() {
-        acceptPermissions(
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ), REQUEST_GPS
-        )
+        when (Build.VERSION.SDK_INT) {
+            in Build.VERSION_CODES.M..Build.VERSION_CODES.P -> {
+                acceptPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ), REQUEST_GPS
+                )
+            }
+
+            Build.VERSION_CODES.Q -> {
+                val permissionAccessCoarseLocationApproved = ActivityCompat
+                    .checkSelfPermission(context!!, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                        PackageManager.PERMISSION_GRANTED
+
+                if (permissionAccessCoarseLocationApproved) {
+                    val backgroundLocationPermissionApproved = ActivityCompat
+                        .checkSelfPermission(context!!, ACCESS_BACKGROUND_LOCATION) ==
+                            PackageManager.PERMISSION_GRANTED
+
+                    if (backgroundLocationPermissionApproved) {
+                        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+                        if (mBluetoothAdapter.isEnabled && mGpsPermissionAccepted) {
+                            startTracking()
+                        } else {
+                            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                            startActivityForResult(intent, REQUEST_BLUETOOTH)
+                        }
+                    } else {
+                        requestPermissions(
+                            arrayOf(ACCESS_BACKGROUND_LOCATION),
+                            REQUEST_GPS
+                        )
+                    }
+                } else {
+                    requestPermissions(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            ACCESS_BACKGROUND_LOCATION
+                        ),
+                        REQUEST_GPS
+                    )
+                }
+            }
+        }
     }
 
     private fun stopServiceOnClick() {
@@ -321,13 +367,18 @@ class MainFragment : Fragment() {
 
                 } else {
                     mGpsPermissionAccepted = true
-                    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                    try {
 
-                    if (mBluetoothAdapter.isEnabled) {
-                        startTracking()
-                    } else {
-                        val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                        startActivityForResult(intent, REQUEST_BLUETOOTH)
+                        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+                        if (mBluetoothAdapter.isEnabled) {
+                            startTracking()
+                        } else {
+                            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                            startActivityForResult(intent, REQUEST_BLUETOOTH)
+                        }
+                    } catch (ex: Exception) {
+
                     }
                 }
             }
@@ -353,13 +404,16 @@ class MainFragment : Fragment() {
                 if (permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION)
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         mGpsPermissionAccepted = true
-                        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                        try {
+                            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-                        if (mBluetoothAdapter.isEnabled && mGpsPermissionAccepted) {
-                            startTracking()
-                        } else {
-                            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                            startActivityForResult(intent, REQUEST_BLUETOOTH)
+                            if (mBluetoothAdapter.isEnabled && mGpsPermissionAccepted) {
+                                startTracking()
+                            } else {
+                                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                                startActivityForResult(intent, REQUEST_BLUETOOTH)
+                            }
+                        } catch (ex: Exception) {
                         }
                     }
             }
